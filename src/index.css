@@ -1,0 +1,115 @@
+@import url('https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Noto+Sans+Arabic:wght@400;500;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html {
+  direction: rtl;
+}
+
+body {
+  font-family: 'Noto Sans Arabic', sans-serif;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Amiri', serif;
+}
+
+.pattern-islamic {
+  background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.4'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+}
+
+.arabic-text {
+  font-family: 'Amiri', serif;
+  line-height: 2;
+}
+
+.quran-verse {
+  font-family: 'Amiri', serif;
+  font-size: 1.5rem;
+  line-height: 2.5;
+}
+
+.tafseer-text {
+  font-family: 'Noto Sans Arabic', sans-serif;
+  line-height: 1.8;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #1E6F5C;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #165e4d;
+}
+
+/* Dark mode adjustments */
+.dark ::-webkit-scrollbar-track {
+  background: #2d3748;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: #38a89d;
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: #2c9a8f;
+}
+
+/* Audio player custom styling */
+.audio-player {
+  @apply bg-white dark:bg-gray-800 rounded-lg shadow-md p-4;
+}
+
+.audio-player-controls {
+  @apply flex items-center justify-between mb-2;
+}
+
+.audio-progress {
+  @apply w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden cursor-pointer;
+}
+
+.progress-bar {
+  @apply h-full bg-emerald-600 dark:bg-emerald-500 transition-all duration-100;
+}
+
+/* Animation for loading states */
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.animate-pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Animation for page transitions */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.fade-in {
+  animation: fadeIn 0.3s ease-in-out;
+}
