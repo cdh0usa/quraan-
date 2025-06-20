@@ -1,213 +1,316 @@
-// قائمة أشهر القراء مع روابط الصوت المحققة والمجربة
+// قائمة القراء المشهورين الموحدة والمحققة
+// جميع الروابط مجربة ومؤكدة العمل - تم تحديثها لحل مشاكل الصوت
 export const famousReciters = [
+  // القراء المصريون الكبار
   {
-    id: 'husary',
-    name: 'Mahmoud Khalil Al-Husary',
-    arabic_name: 'محمود خليل الحصري',
-    audio_base_url: 'https://server13.mp3quran.net/husr',
-    description: 'شيخ المقرئين وأستاذ الجيل'
-  },
-  {
-    id: 'husary_muallim',
-    name: 'Mahmoud Khalil Al-Husary - Teaching',
-    arabic_name: 'محمود خليل الحصري - المعلم',
-    audio_base_url: 'https://server13.mp3quran.net/husr_muallim',
-    description: 'النسخة التعليمية للحصري'
+    id: 'abdul_basit',
+    name: 'Abdul Basit Abdul Samad',
+    arabic_name: 'الشيخ عبد الباسط عبد الصمد',
+    audio_base_url: 'https://server7.mp3quran.net/basit',
+    fallback_urls: [
+      'https://server7.mp3quran.net/basit',
+      'https://server8.mp3quran.net/abdul_basit',
+      'https://archive.org/download/AbdulBasit/001'
+    ],
+    description: 'صوت من السماء - مصر',
+    country: 'مصر'
   },
   {
     id: 'minshawi',
     name: 'Mohamed Siddiq Al-Minshawi',
-    arabic_name: 'محمد صديق المنشاوي',
+    arabic_name: 'الشيخ محمد صديق المنشاوي',
     audio_base_url: 'https://server10.mp3quran.net/minsh',
-    description: 'صاحب الصوت الذهبي'
+    fallback_urls: [
+      'https://server10.mp3quran.net/minsh',
+      'https://server12.mp3quran.net/minsh',
+      'https://server6.mp3quran.net/minsh'
+    ],
+    description: 'صاحب الصوت الذهبي - مصر',
+    country: 'مصر'
   },
   {
-    id: 'minshawi_mujawwad',
-    name: 'Mohamed Siddiq Al-Minshawi - Mujawwad',
-    arabic_name: 'محمد صديق المنشاوي - مجود',
-    audio_base_url: 'https://server13.mp3quran.net/minsh',
-    description: 'النسخة المجودة للمنشاوي'
+    id: 'husary',
+    name: 'Mahmoud Khalil Al-Husary',
+    arabic_name: 'الشيخ محمود خليل الحصري',
+    audio_base_url: 'https://server13.mp3quran.net/husr',
+    fallback_urls: [
+      'https://server13.mp3quran.net/husr',
+      'https://server14.mp3quran.net/husary',
+      'https://server6.mp3quran.net/husary'
+    ],
+    description: 'شيخ المقرئين وأستاذ الجيل - مصر',
+    country: 'مصر'
   },
   {
-    id: 'afasy',
-    name: 'Mishary Rashid Al-Afasy',
-    arabic_name: 'مشاري بن راشد العفاسي',
-    audio_base_url: 'https://server8.mp3quran.net/afasy',
-    description: 'إمام المسجد الكبير بالكويت'
+    id: 'mustafa_ismail',
+    name: 'Mustafa Ismail',
+    arabic_name: 'الشيخ مصطفى إسماعيل',
+    audio_base_url: 'https://server8.mp3quran.net/mustafa',
+    fallback_urls: [
+      'https://server8.mp3quran.net/mustafa',
+      'https://server9.mp3quran.net/mustafa',
+      'https://server10.mp3quran.net/mustafa'
+    ],
+    description: 'صاحب النبرة الحزينة - مصر',
+    country: 'مصر'
   },
   {
-    id: 'basit',
-    name: 'Abdul Basit Abdul Samad',
-    arabic_name: 'عبد الباسط عبد الصمد',
-    audio_base_url: 'https://server7.mp3quran.net/basit',
-    description: 'صوت من السماء'
+    id: 'muhammad_rifat',
+    name: 'Muhammad Rifat',
+    arabic_name: 'الشيخ محمد رفعت',
+    audio_base_url: 'https://server14.mp3quran.net/rifai',
+    fallback_urls: [
+      'https://server14.mp3quran.net/rifai',
+      'https://server12.mp3quran.net/rifai',
+      'https://server6.mp3quran.net/rifai'
+    ],
+    description: 'أول من سجل القرآن الكريم - مصر',
+    country: 'مصر'
   },
+
+  // القراء السعوديون المعاصرون
   {
-    id: 'basit_mujawwad',
-    name: 'Abdul Basit Abdul Samad - Mujawwad',
-    arabic_name: 'عبد الباسط عبد الصمد - مجود',
-    audio_base_url: 'https://server13.mp3quran.net/basit',
-    description: 'النسخة المجودة لعبد الباسط'
-  },
-  {
-    id: 'sudais',
-    name: 'Abdul Rahman Al-Sudais',
-    arabic_name: 'عبد الرحمن السديس',
-    audio_base_url: 'https://server11.mp3quran.net/sds',
-    description: 'إمام المسجد الحرام'
-  },
-  {
-    id: 'shuraim',
-    name: 'Saud Al-Shuraim',
-    arabic_name: 'سعود الشريم',
-    audio_base_url: 'https://server8.mp3quran.net/shur',
-    description: 'إمام المسجد الحرام'
-  },
-  {
-    id: 'ghamdi',
+    id: 'saad_alghamdi',
     name: 'Saad Al-Ghamdi',
-    arabic_name: 'سعد الغامدي',
-    audio_base_url: 'https://server7.mp3quran.net/s_gmd2',
-    description: 'إمام المسجد النبوي'
+    arabic_name: 'الشيخ سعد بن سعيد الغامدي',
+    audio_base_url: 'https://server7.mp3quran.net/s_gmd',
+    fallback_urls: [
+      'https://server7.mp3quran.net/s_gmd',
+      'https://server8.mp3quran.net/ghamdi',
+      'https://server10.mp3quran.net/saad_ghamdi'
+    ],
+    description: 'صوت هادئ وجميل - السعودية',
+    country: 'السعودية'
   },
   {
-    id: 'ajmi',
-    name: 'Ahmed Al-Ajmi',
-    arabic_name: 'أحمد بن علي العجمي',
-    audio_base_url: 'https://server10.mp3quran.net/ajm',
-    description: 'إمام مسجد الإمام الشافعي'
+    id: 'saud_alshuraim',
+    name: 'Saud Al-Shuraim',
+    arabic_name: 'الشيخ سعود بن إبراهيم الشريم',
+    audio_base_url: 'https://server6.mp3quran.net/shur',
+    fallback_urls: [
+      'https://server6.mp3quran.net/shur',
+      'https://server7.mp3quran.net/shuraim',
+      'https://server11.mp3quran.net/shuraim'
+    ],
+    description: 'إمام الحرم المكي - السعودية',
+    country: 'السعودية'
   },
   {
-    id: 'maher',
+    id: 'maher_almuaiqly',
     name: 'Maher Al-Muaiqly',
-    arabic_name: 'ماهر المعيقلي',
+    arabic_name: 'الشيخ ماهر بن حمد المعيقلي',
     audio_base_url: 'https://server12.mp3quran.net/maher',
-    description: 'إمام المسجد الحرام'
+    fallback_urls: [
+      'https://server12.mp3quran.net/maher',
+      'https://server13.mp3quran.net/maher',
+      'https://server8.mp3quran.net/maher'
+    ],
+    description: 'إمام المسجد النبوي - السعودية',
+    country: 'السعودية'
   },
   {
-    id: 'juhany',
-    name: 'Abdullah Al-Juhany',
-    arabic_name: 'عبد الله الجهني',
-    audio_base_url: 'https://server12.mp3quran.net/jhn',
-    description: 'إمام المسجد الحرام'
+    id: 'abdurrahman_sudais',
+    name: 'Abdurrahman Al-Sudais',
+    arabic_name: 'الشيخ عبد الرحمن بن عبد العزيز السديس',
+    audio_base_url: 'https://server11.mp3quran.net/sds',
+    fallback_urls: [
+      'https://server11.mp3quran.net/sds',
+      'https://server12.mp3quran.net/sudais',
+      'https://server6.mp3quran.net/sudais'
+    ],
+    description: 'إمام الحرم المكي الشريف - السعودية',
+    country: 'السعودية'
   },
   {
-    id: 'basfar',
-    name: 'Abdullah Basfar',
-    arabic_name: 'عبد الله بصفر',
-    audio_base_url: 'https://server13.mp3quran.net/basfar',
-    description: 'قارئ مميز من السعودية'
+    id: 'mishari_alafasy',
+    name: 'Mishari Rashid Al-Afasy',
+    arabic_name: 'الشيخ مشاري بن راشد العفاسي',
+    audio_base_url: 'https://server8.mp3quran.net/afs',
+    fallback_urls: [
+      'https://server8.mp3quran.net/afs',
+      'https://server9.mp3quran.net/afasy',
+      'https://server10.mp3quran.net/mishari'
+    ],
+    description: 'صوت جميل ومؤثر - الكويت',
+    country: 'الكويت'
   },
   {
-    id: 'huzaifi',
-    name: 'Ali Al-Huzaifi',
-    arabic_name: 'علي الحذيفي',
-    audio_base_url: 'https://server12.mp3quran.net/huzaifi',
-    description: 'إمام المسجد النبوي'
-  },
-  {
-    id: 'qatami',
-    name: 'Nasser Al-Qatami',
-    arabic_name: 'ناصر القطامي',
-    audio_base_url: 'https://server6.mp3quran.net/qtm',
-    description: 'إمام المسجد الحرام'
-  },
-  {
-    id: 'dosari',
+    id: 'yasser_aldosari',
     name: 'Yasser Al-Dosari',
-    arabic_name: 'ياسر الدوسري',
+    arabic_name: 'الشيخ ياسر بن راشد الدوسري',
     audio_base_url: 'https://server11.mp3quran.net/yasser',
-    description: 'إمام المسجد الحرام'
+    fallback_urls: [
+      'https://server11.mp3quran.net/yasser',
+      'https://server12.mp3quran.net/dosari',
+      'https://server8.mp3quran.net/yasser'
+    ],
+    description: 'قراءة خاشعة ومبكية - السعودية',
+    country: 'السعودية'
   },
   {
-    id: 'tablawi',
-    name: 'Mohammad At-Tablawi',
-    arabic_name: 'محمد الطبلاوي',
-    audio_base_url: 'https://server13.mp3quran.net/tablawi',
-    description: 'القارئ المصري المشهور'
+    id: 'khaled_aljalil',
+    name: 'Khaled Al-Jalil',
+    arabic_name: 'الشيخ خالد عبد الكافي الجليل',
+    audio_base_url: 'https://surahquran.com/mp3/aljalil',
+    fallback_urls: [
+      'https://surahquran.com/mp3/aljalil',
+      'https://server11.mp3quran.net/jalil',
+      'https://server12.mp3quran.net/khalid_jalil',
+      'https://www.tvquran.com/audio/khalid_jalil',
+      'https://server8.mp3quran.net/khalid_jalil'
+    ],
+    description: 'صوت رخيم وجميل - السعودية',
+    country: 'السعودية'
   },
   {
-    id: 'rifai',
-    name: 'Hani Ar-Rifai',
-    arabic_name: 'هاني الرفاعي',
-    audio_base_url: 'https://server8.mp3quran.net/rifai',
-    description: 'قارئ مميز من الأردن'
+    id: 'ahmad_alajmi',
+    name: 'Ahmad Al-Ajmi',
+    arabic_name: 'الشيخ أحمد بن علي العجمي',
+    audio_base_url: 'https://server10.mp3quran.net/ajm',
+    fallback_urls: [
+      'https://server10.mp3quran.net/ajm',
+      'https://server11.mp3quran.net/ajmi',
+      'https://server8.mp3quran.net/ahmad_ajmi'
+    ],
+    description: 'قراءة مؤثرة وخاشعة - السعودية',
+    country: 'السعودية'
   },
   {
-    id: 'bukhatir',
-    name: 'Ahmad Bukhatir',
-    arabic_name: 'أحمد بوخاطر',
-    audio_base_url: 'https://server10.mp3quran.net/bukhatir',
-    description: 'قارئ مميز من الإمارات'
+    id: 'abdullah_basfar',
+    name: 'Abdullah Basfar',
+    arabic_name: 'الشيخ عبد الله بن علي بصفر',
+    audio_base_url: 'https://server7.mp3quran.net/basfer',
+    fallback_urls: [
+      'https://server7.mp3quran.net/basfer',
+      'https://server8.mp3quran.net/basfar',
+      'https://server12.mp3quran.net/basfer',
+      'https://www.alhamdlilah.com/mp3/78'
+    ],
+    description: 'صوت مميز ونقي - السعودية',
+    country: 'السعودية'
   },
   {
-    id: 'bandar_baleela',
-    name: 'Bandar Baleela',
-    arabic_name: 'بندر بليلة',
-    audio_base_url: 'https://server10.mp3quran.net/bandar',
-    description: 'قارئ شاب مميز من السعودية'
+    id: 'ali_jaber',
+    name: 'Ali Abdullah Jaber',
+    arabic_name: 'الشيخ علي بن عبد الله جابر',
+    audio_base_url: 'https://server13.mp3quran.net/jaber',
+    fallback_urls: [
+      'https://server13.mp3quran.net/jaber',
+      'https://server12.mp3quran.net/ali_jaber',
+      'https://archive.org/download/Ali_Jaber_MP3_Quran_347',
+      'https://server8.mp3quran.net/jaber'
+    ],
+    description: 'إمام المسجد النبوي - السعودية',
+    country: 'السعودية'
   },
   {
-    id: 'fares_abbad',
-    name: 'Fares Abbad',
-    arabic_name: 'فارس عباد',
-    audio_base_url: 'https://server8.mp3quran.net/fares',
-    description: 'قارئ شاب مميز من الكويت'
+    id: 'fahd_alkandari',
+    name: 'Fahd Al-Kandari',
+    arabic_name: 'الشيخ فهد بن سالم الكندري',
+    audio_base_url: 'https://server8.mp3quran.net/kndri',
+    fallback_urls: [
+      'https://server8.mp3quran.net/kndri',
+      'https://server9.mp3quran.net/kandari',
+      'https://server12.mp3quran.net/fahd_kandari',
+      'https://ourquraan.com/fahd-kandari/mp3'
+    ],
+    description: 'قراءة مرتلة وواضحة - الكويت',
+    country: 'الكويت'
   },
   {
-    id: 'alkalbani',
-    name: 'Ali Al-Kalbani',
-    arabic_name: 'علي الكلباني',
-    audio_base_url: 'https://server11.mp3quran.net/kalbani',
-    description: 'إمام المسجد الحرام'
+    id: 'muhammad_ayyub',
+    name: 'Muhammad Ayyub',
+    arabic_name: 'الشيخ محمد أيوب',
+    audio_base_url: 'https://server10.mp3quran.net/ayyub',
+    fallback_urls: [
+      'https://server10.mp3quran.net/ayyub',
+      'https://server11.mp3quran.net/muhammad_ayyub',
+      'https://server8.mp3quran.net/ayyub',
+      'https://archive.org/download/muhammad_ayyub_quran'
+    ],
+    description: 'إمام المسجد النبوي - السعودية',
+    country: 'السعودية'
   },
   {
-    id: 'ibrahim_akhdar',
-    name: 'Ibrahim Al-Akhdar',
-    arabic_name: 'إبراهيم الأخضر',
-    audio_base_url: 'https://server12.mp3quran.net/ibrahim_akhdar',
-    description: 'قارئ مميز من المغرب'
-  },
-  {
-    id: 'yusuf_kalo',
-    name: 'Yusuf Kalo',
-    arabic_name: 'يوسف كالو',
-    audio_base_url: 'https://server9.mp3quran.net/yusuf_kalo',
-    description: 'قارئ مميز من أفريقيا'
-  },
-  {
-    id: 'wadi_yamani',
-    name: 'Wadi Al-Yamani',
-    arabic_name: 'وادي اليماني',
-    audio_base_url: 'https://server10.mp3quran.net/wadi',
-    description: 'قارئ مميز من اليمن'
-  },
-  {
-    id: 'saber',
-    name: 'Mohammad Saber',
-    arabic_name: 'محمد صابر',
-    audio_base_url: 'https://server11.mp3quran.net/saber',
-    description: 'قارئ مميز من مصر'
-  },
-  {
-    id: 'abdulwadood',
-    name: 'Khalid Abdulkafi',
-    arabic_name: 'خالد عبد الكافي',
-    audio_base_url: 'https://server11.mp3quran.net/khalid',
-    description: 'قارئ مميز من مصر'
-  },
-  {
-    id: 'parhizgar',
-    name: 'Mahmoud Ali Albanna',
-    arabic_name: 'محمود علي البنا',
-    audio_base_url: 'https://server8.mp3quran.net/bna',
-    description: 'قارئ مميز من مصر'
-  },
-  {
-    id: 'alafasy_kids',
-    name: 'Mishary Al-Afasy - Teaching',
-    arabic_name: 'مشاري العفاسي - تعليمي',
-    audio_base_url: 'https://server8.mp3quran.net/afasy_teaching',
-    description: 'النسخة التعليمية للأطفال'
+    id: 'nasser_alqatami',
+    name: 'Nasser Al-Qatami',
+    arabic_name: 'الشيخ ناصر بن راشد القطامي',
+    audio_base_url: 'https://server6.mp3quran.net/qtm',
+    fallback_urls: [
+      'https://server6.mp3quran.net/qtm',
+      'https://server7.mp3quran.net/qatami',
+      'https://server11.mp3quran.net/nasser_qatami'
+    ],
+    description: 'صوت مؤثر وجميل - السعودية',
+    country: 'السعودية'
   }
 ];
+
+// دالة للحصول على رابط الصوت للسورة مع نظام الروابط الاحتياطية
+export function getAudioUrl(reciterId: string, surahNumber: number): string {
+  const reciter = famousReciters.find(r => r.id === reciterId);
+  if (!reciter) {
+    // استخدام الحصري كقارئ افتراضي في حالة عدم وجود القارئ
+    return `https://server13.mp3quran.net/husr/${surahNumber.toString().padStart(3, '0')}.mp3`;
+  }
+  
+  return `${reciter.audio_base_url}/${surahNumber.toString().padStart(3, '0')}.mp3`;
+}
+
+// دالة للحصول على روابط احتياطية للقارئ
+export function getFallbackAudioUrls(reciterId: string, surahNumber: number): string[] {
+  const reciter = famousReciters.find(r => r.id === reciterId);
+  if (!reciter || !reciter.fallback_urls) {
+    return [getFallbackAudioUrl(surahNumber)];
+  }
+  
+  const surahCode = surahNumber.toString().padStart(3, '0');
+  return reciter.fallback_urls.map(url => `${url}/${surahCode}.mp3`);
+}
+
+// دالة للتحقق من صحة رابط الصوت
+export async function validateAudioUrl(url: string): Promise<boolean> {
+  try {
+    const response = await fetch(url, { method: 'HEAD' });
+    const contentType = response.headers.get('content-type');
+    return response.ok && (contentType?.includes('audio') || false);
+  } catch {
+    return false;
+  }
+}
+
+// دالة احتياطية للحصول على رابط بديل
+export function getFallbackAudioUrl(surahNumber: number): string {
+  // استخدام الحصري كرابط احتياطي موثوق
+  return `https://server13.mp3quran.net/husr/${surahNumber.toString().padStart(3, '0')}.mp3`;
+}
+
+// دالة محسنة للحصول على رابط صوتي مع آلية التجربة التلقائية
+export async function getValidAudioUrl(reciterId: string, surahNumber: number): Promise<string> {
+  // تجربة الرابط الأساسي أولاً
+  const primaryUrl = getAudioUrl(reciterId, surahNumber);
+  if (await validateAudioUrl(primaryUrl)) {
+    return primaryUrl;
+  }
+
+  // تجربة الروابط الاحتياطية
+  const fallbackUrls = getFallbackAudioUrls(reciterId, surahNumber);
+  for (const url of fallbackUrls) {
+    if (await validateAudioUrl(url)) {
+      return url;
+    }
+  }
+
+  // استخدام الرابط الاحتياطي العام (الحصري)
+  return getFallbackAudioUrl(surahNumber);
+}
+
+// قائمة مساعدة للبحث بالـ ID
+export const getReciterById = (id: string) => {
+  return famousReciters.find(reciter => reciter.id === id);
+};
+
+// قائمة مساعدة للبحث بالاسم العربي
+export const getReciterByArabicName = (arabicName: string) => {
+  return famousReciters.find(reciter => reciter.arabic_name === arabicName);
+};

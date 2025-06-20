@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { 
   BookOpen, 
@@ -11,8 +11,49 @@ import {
   BarChart3,
   Shield
 } from 'lucide-react';
+import { getTableCount, testDatabaseConnection } from '../../services/supabase';
+import toast from 'react-hot-toast';
 
 const AdminDashboard: React.FC = () => {
+  const [stats, setStats] = useState({
+    hadiths: 0,
+    prophets: 0,
+    adhkar: 0,
+    reciters: 0,
+  });
+
+  const [loadingStats, setLoadingStats] = useState(false);
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        setLoadingStats(true);
+        const [hadiths, prophets, adhkar, reciters] = await Promise.all([
+          getTableCount('hadiths'),
+          getTableCount('prophet_stories'),
+          getTableCount('adhkar'),
+          getTableCount('reciters'),
+        ]);
+
+        setStats({ hadiths, prophets, adhkar, reciters });
+
+        // اختبار الاتصال بقاعدة البيانات مرة واحدة عند الدخول للوحة التحكم
+        const isConnected = await testDatabaseConnection();
+        if (isConnected) {
+          toast.success('✅ تم الاتصال بقاعدة البيانات بنجاح');
+        } else {
+          toast.error('⚠️ فشل الاتصال بقاعدة البيانات');
+        }
+      } catch (error) {
+        console.error('خطأ في جلب الإحصائيات:', error);
+      } finally {
+        setLoadingStats(false);
+      }
+    };
+
+    fetchStats();
+  }, []);
+
   const adminSections = [
     {
       title: 'الأحاديث النبوية',
@@ -106,7 +147,9 @@ const AdminDashboard: React.FC = () => {
               <div className="flex items-center">
                 <BarChart3 className="w-8 h-8 ml-3" />
                 <div>
-                  <p className="text-2xl font-bold">1,234</p>
+                  <p className="text-2xl font-bold">
+                    {loadingStats ? '...' : stats.hadiths + stats.prophets + stats.adhkar + stats.reciters}
+                  </p>
                   <p className="text-emerald-100 text-sm">إجمالي المحتوى</p>
                 </div>
               </div>
@@ -115,8 +158,8 @@ const AdminDashboard: React.FC = () => {
               <div className="flex items-center">
                 <Users className="w-8 h-8 ml-3" />
                 <div>
-                  <p className="text-2xl font-bold">567</p>
-                  <p className="text-emerald-100 text-sm">الزوار اليوم</p>
+                  <p className="text-2xl font-bold">{loadingStats ? '...' : stats.reciters}</p>
+                  <p className="text-emerald-100 text-sm">عدد القراء</p>
                 </div>
               </div>
             </div>
@@ -124,8 +167,8 @@ const AdminDashboard: React.FC = () => {
               <div className="flex items-center">
                 <BookOpen className="w-8 h-8 ml-3" />
                 <div>
-                  <p className="text-2xl font-bold">89</p>
-                  <p className="text-emerald-100 text-sm">المحتوى الجديد</p>
+                  <p className="text-2xl font-bold">{loadingStats ? '...' : stats.hadiths}</p>
+                  <p className="text-emerald-100 text-sm">عدد الأحاديث</p>
                 </div>
               </div>
             </div>

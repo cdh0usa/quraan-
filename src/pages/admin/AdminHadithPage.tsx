@@ -1,40 +1,58 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ArrowRight, Plus, Edit2, Trash2, X } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import AddHadithForm from '../../components/admin/AddHadithForm';
 import toast from 'react-hot-toast';
-
-interface Hadith {
-  id: number;
-  title: string;
-  text: string;
-  source: string;
-  category: string;
-}
+import { getHadiths, deleteHadith } from '../../services/supabase';
+import { Hadith } from '../../types';
 
 const AdminHadithPage: React.FC = () => {
-  const [hadiths, setHadiths] = useState<Hadith[]>([
-    {
-      id: 1,
-      title: 'نية المؤمن',
-      text: 'إنما الأعمال بالنيات، وإنما لكل امرئ ما نوى',
-      source: 'صحيح البخاري',
-      category: 'النية والإخلاص'
-    }
-  ]);
+  const [hadiths, setHadiths] = useState<Hadith[]>([]);
   const [showAddForm, setShowAddForm] = useState(false);
+  const [loading, setLoading] = useState(true);
 
-  const handleDelete = (id: number) => {
+  const handleDelete = async (id: string) => {
     if (confirm('هل أنت متأكد من حذف هذا الحديث؟')) {
-      setHadiths(hadiths.filter(hadith => hadith.id !== id));
-      toast.success('تم حذف الحديث بنجاح');
+      try {
+        await deleteHadith(id);
+        setHadiths(hadiths.filter(h => h.id !== id));
+        toast.success('تم حذف الحديث بنجاح');
+      } catch (error) {
+        console.error('Error deleting hadith:', error);
+        toast.error('حدث خطأ أثناء حذف الحديث');
+      }
     }
   };
 
   const handleAddSuccess = () => {
     setShowAddForm(false);
-    toast.success('تم إضافة الحديث بنجاح');
+    loadHadiths();
   };
+
+  const loadHadiths = async () => {
+    try {
+      setLoading(true);
+      const data = await getHadiths();
+      setHadiths(data);
+    } catch (error) {
+      console.error('Error loading hadiths:', error);
+      toast.error('حدث خطأ أثناء تحميل الأحاديث');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadHadiths();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="fade-in">

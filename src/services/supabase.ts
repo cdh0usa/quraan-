@@ -173,3 +173,109 @@ export const deleteReciter = async (id: string) => {
   
   if (error) throw error;
 };
+
+// إضافة دوال جديدة لإدارة القراء بشكل أفضل
+
+// فحص وجود قارئ معين
+export const checkReciterExists = async (arabicName: string) => {
+  const { data, error } = await supabase
+    .from('reciters')
+    .select('id, arabic_name')
+    .eq('arabic_name', arabicName)
+    .single();
+  
+  if (error && error.code !== 'PGRST116') throw error; // PGRST116 = no rows found
+  return data;
+};
+
+// تنظيف القراء المتكررة
+export const cleanDuplicateReciters = async () => {
+  try {
+    const { data: reciters, error } = await supabase
+      .from('reciters')
+      .select('*');
+    
+    if (error) throw error;
+    
+    const uniqueReciters = new Map();
+    const duplicates: string[] = [];
+    
+    reciters?.forEach(reciter => {
+      if (uniqueReciters.has(reciter.arabic_name)) {
+        duplicates.push(reciter.id);
+      } else {
+        uniqueReciters.set(reciter.arabic_name, reciter);
+      }
+    });
+    
+    if (duplicates.length > 0) {
+      const { error: deleteError } = await supabase
+        .from('reciters')
+        .delete()
+        .in('id', duplicates);
+      
+      if (deleteError) throw deleteError;
+      console.log(`تم حذف ${duplicates.length} قارئ مكرر`);
+    }
+    
+    return duplicates.length;
+  } catch (error) {
+    console.error('خطأ في تنظيف القراء المتكررة:', error);
+    throw error;
+  }
+};
+
+// اختبار الاتصال بقاعدة البيانات
+export const testDatabaseConnection = async () => {
+  try {
+    const { data, error } = await supabase
+      .from('reciters')
+      .select('count')
+      .limit(1);
+    
+    if (error) throw error;
+    return true;
+  } catch (error) {
+    console.error('فشل الاتصال بقاعدة البيانات:', error);
+    return false;
+  }
+};
+
+// دالة لمزامنة القراء مع القائمة المحلية (إذا لزم الأمر)
+export const syncRecitersWithLocal = async (localReciters: any[]) => {
+  try {
+    const dbReciters = await getReciters();
+    const dbNames = new Set(dbReciters.map(r => r.arabic_name));
+    
+    const newReciters = localReciters.filter(r => !dbNames.has(r.arabic_name));
+    
+    if (newReciters.length > 0) {
+      const { error } = await supabase
+        .from('reciters')
+        .insert(newReciters.map(r => ({
+          name: r.name,
+          arabic_name: r.arabic_name,
+          audio_base_url: r.audio_base_url,
+          country: r.country
+        })));
+      
+      if (error) throw error;
+      console.log(`تم إضافة ${newReciters.length} قارئ جديد`);
+    }
+    
+    return newReciters.length;
+  } catch (error) {
+    console.error('خطأ في مزامنة القراء:', error);
+    throw error;
+  }
+};
+
+// دالة عامة لإرجاع عدد السجلات في جدول معين
+export const getTableCount = async (tableName: string): Promise<number> => {
+  const { count, error } = await supabase
+    .from(tableName)
+    .select('*', { count: 'exact', head: true });
+
+  if (error) throw error;
+  return count ?? 0;
+};

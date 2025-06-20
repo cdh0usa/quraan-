@@ -1,34 +1,67 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ArrowRight, Plus, Edit2, Trash2, X } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { ProphetStory } from '../../types';
 import AddProphetForm from '../../components/admin/AddProphetForm';
 import toast from 'react-hot-toast';
+import { getProphetStories, deleteProphetStory } from '../../services/supabase';
 
 const AdminProphetsPage: React.FC = () => {
-  const [stories, setStories] = useState<ProphetStory[]>([
-    {
-      id: '1',
-      name: 'Adam',
-      arabicName: 'آدم',
-      shortDescription: 'أبو البشر وأول الأنبياء',
-      fullStory: 'قصة سيدنا آدم عليه السلام...',
-      quranReferences: ['البقرة: 30-37', 'الأعراف: 11-25']
-    }
-  ]);
+  const [stories, setStories] = useState<ProphetStory[]>([]);
+  const [loading, setLoading] = useState(true);
   const [showAddForm, setShowAddForm] = useState(false);
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
     if (confirm('هل أنت متأكد من حذف هذه القصة؟')) {
-      setStories(stories.filter(story => story.id !== id));
-      toast.success('تم حذف القصة بنجاح');
+      try {
+        await deleteProphetStory(id);
+        setStories(stories.filter(story => story.id !== id));
+        toast.success('تم حذف القصة بنجاح');
+      } catch (error) {
+        console.error('Error deleting story:', error);
+        toast.error('حدث خطأ أثناء حذف القصة');
+      }
     }
   };
 
   const handleAddSuccess = () => {
     setShowAddForm(false);
-    toast.success('تم إضافة قصة النبي بنجاح');
+    loadStories();
   };
+
+  const loadStories = async () => {
+    try {
+      setLoading(true);
+      const data = await getProphetStories();
+      // Supabase returns snake_case columns; map to camelCase for UI consistency
+      const mapped = data.map((item: any) => ({
+        id: item.id,
+        name: item.name,
+        arabicName: item.arabic_name,
+        shortDescription: item.short_description,
+        fullStory: item.full_story,
+        quranReferences: item.quran_references ?? []
+      }));
+      setStories(mapped);
+    } catch (error) {
+      console.error('Error loading prophet stories:', error);
+      toast.error('حدث خطأ أثناء تحميل القصص');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadStories();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="fade-in">

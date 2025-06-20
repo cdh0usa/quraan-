@@ -32,6 +32,7 @@ export interface Reciter {
   arabic_name: string;
   audio_base_url: string;
   description?: string;
+  country?: string;
   created_at?: string;
 }
 
@@ -44,11 +45,13 @@ export interface HadithCategory {
 }
 
 export interface Hadith {
-  id: number;
+  id: string;
   title: string;
   text: string;
   source: string;
   category: string;
+  created_at?: string;
+  updated_at?: string;
 }
 
 // Adhkar related types
@@ -59,13 +62,15 @@ export interface AdhkarCategory {
 }
 
 export interface Dhikr {
-  id: number;
+  id: string;
   text: string;
   transliteration?: string;
   translation?: string;
   source?: string;
   repeat?: number;
   category: string;
+  created_at?: string;
+  updated_at?: string;
 }
 
 // Prophet story related types

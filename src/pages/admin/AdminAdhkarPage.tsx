@@ -1,33 +1,50 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ArrowRight, Plus, Edit2, Trash2, X } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Dhikr } from '../../types';
 import AddDhikrForm from '../../components/admin/AddDhikrForm';
 import toast from 'react-hot-toast';
+import { getAdhkar, deleteDhikr } from '../../services/supabase';
 
 const AdminAdhkarPage: React.FC = () => {
-  const [adhkar, setAdhkar] = useState<Dhikr[]>([
-    {
-      id: 1,
-      text: 'سُبْحَانَ اللَّهِ وَبِحَمْدِهِ',
-      source: 'صحيح البخاري',
-      repeat: 3,
-      category: 'morning'
-    }
-  ]);
+  const [adhkar, setAdhkar] = useState<Dhikr[]>([]);
   const [showAddForm, setShowAddForm] = useState(false);
+  const [loading, setLoading] = useState(true);
 
-  const handleDelete = (id: number) => {
+  const handleDelete = async (id: string) => {
     if (confirm('هل أنت متأكد من حذف هذا الذكر؟')) {
-      setAdhkar(adhkar.filter(dhikr => dhikr.id !== id));
-      toast.success('تم حذف الذكر بنجاح');
+      try {
+        await deleteDhikr(id);
+        setAdhkar(adhkar.filter(d => d.id !== id));
+        toast.success('تم حذف الذكر بنجاح');
+      } catch (error) {
+        console.error('Error deleting dhikr:', error);
+        toast.error('حدث خطأ أثناء حذف الذكر');
+      }
     }
   };
 
   const handleAddSuccess = () => {
     setShowAddForm(false);
-    toast.success('تم إضافة الذكر بنجاح');
+    loadAdhkar();
   };
+
+  const loadAdhkar = async () => {
+    try {
+      setLoading(true);
+      const data = await getAdhkar();
+      setAdhkar(data);
+    } catch (error) {
+      console.error('Error loading adhkar:', error);
+      toast.error('حدث خطأ أثناء تحميل الأذكار');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadAdhkar();
+  }, []);
 
   const getCategoryName = (category: string) => {
     switch (category) {
@@ -41,6 +58,14 @@ const AdminAdhkarPage: React.FC = () => {
         return 'أذكار متنوعة';
     }
   };
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="fade-in">

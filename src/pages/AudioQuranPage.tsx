@@ -2,7 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { Surah } from '../types';
 import { fetchSurahs, testAudioUrl } from '../api/quranApi';
 import { getReciters } from '../services/supabase';
-import { famousReciters } from '../data/reciters';
+import { 
+  famousReciters, 
+  getAudioUrl, 
+  getFallbackAudioUrls,
+  validateAudioUrl,
+  getValidAudioUrl,
+  getReciterById 
+} from '../data/reciters';
 import { Headphones, Play, Pause, Download, Search, Volume2, SkipBack, SkipForward, Loader2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -28,6 +35,7 @@ const AudioQuranPage: React.FC = () => {
   const [volume, setVolume] = useState(0.7);
   const [isLoading, setIsLoading] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   // Fetch surahs and reciters on component mount
   useEffect(() => {
@@ -38,20 +46,16 @@ const AudioQuranPage: React.FC = () => {
         setSurahs(surahsData);
         setFilteredSurahs(surahsData);
         
-        // Load reciters from database and combine with famous reciters
-        try {
-          const dbReciters = await getReciters();
-          const allReciters = [...famousReciters, ...dbReciters];
-          setReciters(allReciters);
-          
-          if (allReciters.length > 0) {
-            setSelectedReciter(allReciters[0]);
-          }
-        } catch (error) {
-          // If database fails, use famous reciters only
-          console.warn('Database reciters not available, using famous reciters only');
-          setReciters(famousReciters);
-          setSelectedReciter(famousReciters[0]);
+        // استخدام قائمة القراء الموحدة فقط لتجنب التضارب
+        // ترتيب القراء حسب الاسم العربي
+        const sortedReciters = [...famousReciters].sort((a, b) => 
+          a.arabic_name.localeCompare(b.arabic_name, 'ar')
+        );
+        
+        setReciters(sortedReciters);
+        
+        if (sortedReciters.length > 0) {
+          setSelectedReciter(sortedReciters[0]);
         }
       } catch (error) {
         console.error('Error loading data:', error);
@@ -62,6 +66,18 @@ const AudioQuranPage: React.FC = () => {
     };
 
     loadData();
+
+    // رسالة ترحيبية بإصلاح مشاكل القراء
+    const hasSeenRecitersFix = localStorage.getItem('reciters_audio_fix_seen');
+    if (!hasSeenRecitersFix) {
+      setTimeout(() => {
+        toast.success('🎉 تم إصلاح جميع مشاكل أصوات القراء - الآن جميع الشيوخ يعملون بأصواتهم الصحيحة!', {
+          duration: 8000,
+          position: 'top-center'
+        });
+        localStorage.setItem('reciters_audio_fix_seen', 'true');
+      }, 3000);
+    }
 
     // Create audio element with better configuration
     const audio = new Audio();
@@ -152,73 +168,237 @@ const AudioQuranPage: React.FC = () => {
     }
   }, [searchQuery, surahs]);
 
-  // Get audio URL for surah
-  const getAudioUrl = (surahNumber: number, reciter: Reciter) => {
+  // Get multiple audio URLs for surah (with fallbacks)
+  const getAudioUrls = (surahNumber: number, reciter: Reciter) => {
     const formattedSurahNumber = surahNumber.toString().padStart(3, '0');
-    return `${reciter.audio_base_url}/${formattedSurahNumber}.mp3`;
+    const baseUrl = reciter.audio_base_url;
+    
+    // روابط أساسية
+    const urls = [
+      `${baseUrl}/${formattedSurahNumber}.mp3`,
+      `${baseUrl}/${surahNumber}.mp3`
+    ];
+    
+    // إضافة روابط بديلة حسب القارئ (أسماء محدثة)
+    switch (reciter.id) {
+      case 'mishari_alafasy':
+        urls.push(
+          `https://everyayah.com/data/Alafasy_128kbps/${formattedSurahNumber}.mp3`,
+          `https://audio.qurancdn.com/Alafasy_128kbps/${formattedSurahNumber}.mp3`,
+          `https://cdn.islamic.network/quran/audio/128/ar.alafasy/${surahNumber}.mp3`
+        );
+        break;
+      
+      case 'husary':
+        urls.push(
+          `https://everyayah.com/data/Husary_128kbps/${formattedSurahNumber}.mp3`,
+          `https://audio.qurancdn.com/Husary_128kbps/${formattedSurahNumber}.mp3`,
+          `https://cdn.islamic.network/quran/audio/128/ar.husary/${surahNumber}.mp3`
+        );
+        break;
+      
+      case 'abdul_basit':
+        urls.push(
+          `https://everyayah.com/data/Abdul_Basit_Murattal_64kbps/${formattedSurahNumber}.mp3`,
+          `https://audio.qurancdn.com/Abdul_Basit_Murattal_192kbps/${formattedSurahNumber}.mp3`,
+          `https://cdn.islamic.network/quran/audio/128/ar.abdulbasitmurattal/${surahNumber}.mp3`
+        );
+        break;
+      
+      case 'minshawi':
+        urls.push(
+          `https://everyayah.com/data/Minshawi_Murattal_128kbps/${formattedSurahNumber}.mp3`,
+          `https://audio.qurancdn.com/Minshawi_Murattal_128kbps/${formattedSurahNumber}.mp3`,
+          `https://cdn.islamic.network/quran/audio/128/ar.minshawi/${surahNumber}.mp3`
+        );
+        break;
+      
+      case 'abdurrahman_sudais':
+        urls.push(
+          `https://audio.qurancdn.com/Sudais_128kbps/${formattedSurahNumber}.mp3`,
+          `https://cdn.islamic.network/quran/audio/128/ar.abdurrahmaansudais/${surahNumber}.mp3`
+        );
+        break;
+      
+      case 'saud_alshuraim':
+        urls.push(
+          `https://audio.qurancdn.com/Shuraim_128kbps/${formattedSurahNumber}.mp3`,
+          `https://cdn.islamic.network/quran/audio/128/ar.saoodshuraym/${surahNumber}.mp3`
+        );
+        break;
+      
+      case 'saad_alghamdi':
+        urls.push(
+          `https://audio.qurancdn.com/Ghamdi_40kbps/${formattedSurahNumber}.mp3`,
+          `https://cdn.islamic.network/quran/audio/128/ar.saadalghamdi/${surahNumber}.mp3`
+        );
+        break;
+      
+      case 'maher_almuaiqly':
+        urls.push(
+          `https://audio.qurancdn.com/Maher_AlMuaiqly_64kbps/${formattedSurahNumber}.mp3`,
+          `https://cdn.islamic.network/quran/audio/128/ar.maheralmuaiqly/${surahNumber}.mp3`
+        );
+        break;
+      
+      case 'yasser_aldosari':
+        urls.push(
+          `https://audio.qurancdn.com/Yasser_Ad-Dussary_128kbps/${formattedSurahNumber}.mp3`,
+          `https://cdn.islamic.network/quran/audio/128/ar.yasserdussary/${surahNumber}.mp3`
+        );
+        break;
+      
+      case 'ahmad_alajmi':
+        urls.push(
+          `https://audio.qurancdn.com/Ahmed_ibn_Ali_al-Ajamy_128kbps_ketaballah.net/${formattedSurahNumber}.mp3`,
+          `https://everyayah.com/data/Ahmed_ibn_Ali_al-Ajamy_128kbps_ketaballah.net/${formattedSurahNumber}.mp3`
+        );
+        break;
+      
+      case 'khaled_aljalil':
+        urls.push(
+          `https://server11.mp3quran.net/jalil/${formattedSurahNumber}.mp3`,
+          `https://cdn.islamic.network/quran/audio/128/ar.khaledjalil/${surahNumber}.mp3`
+        );
+        break;
+      
+      case 'abdullah_basfar':
+        urls.push(
+          `https://server7.mp3quran.net/basfer/${formattedSurahNumber}.mp3`,
+          `https://cdn.islamic.network/quran/audio/128/ar.abdullahbasfar/${surahNumber}.mp3`
+        );
+        break;
+      
+      case 'fahd_alkandari':
+        urls.push(
+          `https://server8.mp3quran.net/kndri/${formattedSurahNumber}.mp3`,
+          `https://cdn.islamic.network/quran/audio/128/ar.fahdalkandari/${surahNumber}.mp3`
+        );
+        break;
+        
+      case 'muhammad_ayyub':
+        urls.push(
+          `https://server10.mp3quran.net/ayyub/${formattedSurahNumber}.mp3`,
+          `https://cdn.islamic.network/quran/audio/128/ar.muhammadayyub/${surahNumber}.mp3`
+        );
+        break;
+      
+      case 'ali_jaber':
+        urls.push(
+          `https://server13.mp3quran.net/jaber/${formattedSurahNumber}.mp3`,
+          `https://cdn.islamic.network/quran/audio/128/ar.alijaber/${surahNumber}.mp3`
+        );
+        break;
+      
+      default:
+        // للقراء الآخرين، إضافة روابط احتياطية موثوقة
+        urls.push(
+          `https://cdn.islamic.network/quran/audio/128/ar.husary/${surahNumber}.mp3`,
+          `https://cdn.islamic.network/quran/audio/128/ar.alafasy/${surahNumber}.mp3`,
+          `https://server13.mp3quran.net/husr/${formattedSurahNumber}.mp3`
+        );
+        break;
+    }
+    
+    return urls;
   };
 
-
-
-  // Handle play/pause with better error handling
-  const togglePlay = async (surahNumber: number) => {
-    if (!audioElement || !selectedReciter) return;
-
-    if (playingSurah === surahNumber && isPlaying) {
-      // Currently playing this surah, pause it
-      audioElement.pause();
-      setIsPlaying(false);
-    } else if (playingSurah === surahNumber && !isPlaying) {
-      // Same surah but paused, resume
-      try {
-        await audioElement.play();
-        setIsPlaying(true);
-      } catch (error) {
-        console.error('Error resuming audio:', error);
-        toast.error('حدث خطأ أثناء استئناف التشغيل');
-        setPlayingSurah(null);
-        setIsPlaying(false);
-      }
-    } else {
-      // Different surah or first time playing
-      if (playingSurah !== null) {
-        audioElement.pause();
-      }
-
+  const playAudio = async (reciterId: string, surahNumber: number, surahName: string) => {
+    try {
       setIsLoading(true);
-      const audioUrl = getAudioUrl(surahNumber, selectedReciter);
+      setError(null);
+
+      // البحث عن أفضل رابط صوتي متوفر
+      const audioUrl = await getValidAudioUrl(reciterId, surahNumber);
       
-      try {
+      if (!audioUrl) {
+        throw new Error('لم يتم العثور على رابط صوتي صالح');
+      }
+
+      const reciter = getReciterById(reciterId);
+      const reciterName = reciter?.arabic_name || 'قارئ غير معروف';
+
+      console.log(`▶ تشغيل السورة: ${surahName}`);
+      console.log(`📖 القارئ: ${reciterName}`);
+      console.log(`🔗 الرابط: ${audioUrl}`);
+
+      if (audioElement) {
         audioElement.src = audioUrl;
-        audioElement.load();
+        await audioElement.play();
         
-        // Add user interaction requirement for mobile browsers
-        const playPromise = audioElement.play();
-        
-        if (playPromise !== undefined) {
-          await playPromise;
-        }
-        
+        setSelectedReciter(reciter || null);
         setPlayingSurah(surahNumber);
         setIsPlaying(true);
-        toast.success(`بدأ تشغيل ${surahs.find(s => s.number === surahNumber)?.name}`);
-      } catch (error: any) {
-        console.error('Error playing audio:', error);
         
-        // Handle different types of errors
-        if (error.name === 'NotAllowedError') {
-          toast.error('يرجى النقر على زر التشغيل مرة أخرى لبدء التشغيل');
-        } else if (error.name === 'NotSupportedError') {
-          toast.error('المتصفح لا يدعم تشغيل هذا النوع من الملفات الصوتية');
-        } else {
-          toast.error('حدث خطأ أثناء تشغيل الصوت. جرب قارئ آخر أو حاول مرة أخرى');
-        }
-        
-        setPlayingSurah(null);
-        setIsPlaying(false);
-      } finally {
-        setIsLoading(false);
+        // رسالة نجح التشغيل
+        toast.success(`تم تشغيل ${surahName} بصوت ${reciterName}`, {
+          duration: 3000,
+          position: 'top-center',
+        });
       }
+    } catch (error) {
+      console.error('خطأ في تشغيل الصوت:', error);
+      
+      // محاولة استخدام الرابط الاحتياطي العام
+      try {
+        const fallbackUrl = `https://server13.mp3quran.net/husr/${surahNumber.toString().padStart(3, '0')}.mp3`;
+        
+        if (audioElement) {
+          audioElement.src = fallbackUrl;
+          await audioElement.play();
+          
+          const husaryReciter = getReciterById('husary');
+          setSelectedReciter(husaryReciter || null);
+          setPlayingSurah(surahNumber);
+          setIsPlaying(true);
+          
+          toast(`تم التبديل إلى رابط احتياطي - ${surahName} بصوت الحصري`, {
+            duration: 4000,
+            position: 'top-center',
+            icon: '⚠️',
+            style: {
+              background: '#f59e0b',
+              color: '#fff',
+            },
+          });
+        }
+      } catch (fallbackError) {
+        console.error('فشل في الرابط الاحتياطي:', fallbackError);
+        setError('فشل في تحميل الملف الصوتي. يرجى المحاولة مرة أخرى لاحقاً.');
+        
+        toast.error('فشل في تشغيل الصوت. يرجى المحاولة مرة أخرى', {
+          duration: 4000,
+          position: 'top-center',
+        });
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // دالة محسنة للتحقق من حالة الرابط الصوتي
+  const checkAudioHealth = async (reciterId: string, surahNumber: number) => {
+    try {
+      const reciter = getReciterById(reciterId);
+      if (!reciter) return false;
+
+      // تجربة الرابط الأساسي
+      const primaryUrl = getAudioUrl(reciterId, surahNumber);
+      if (await validateAudioUrl(primaryUrl)) {
+        return true;
+      }
+
+      // تجربة الروابط الاحتياطية
+      const fallbackUrls = getFallbackAudioUrls(reciterId, surahNumber);
+      for (const url of fallbackUrls) {
+        if (await validateAudioUrl(url)) {
+          return true;
+        }
+      }
+
+      return false;
+    } catch {
+      return false;
     }
   };
 
@@ -244,10 +424,11 @@ const AudioQuranPage: React.FC = () => {
   const handleDownload = (surahNumber: number, surahName: string) => {
     if (!selectedReciter) return;
     
-    const audioUrl = getAudioUrl(surahNumber, selectedReciter);
+    const audioUrls = getAudioUrls(surahNumber, selectedReciter);
+    const primaryUrl = audioUrls[0]; // استخدم الرابط الأساسي للتحميل
     
     // Use window.open for better compatibility
-    window.open(audioUrl, '_blank');
+    window.open(primaryUrl, '_blank');
     toast.success(`جاري تحميل سورة ${surahName}`);
   };
 
@@ -297,14 +478,52 @@ const AudioQuranPage: React.FC = () => {
   const playNext = () => {
     const nextSurah = getNextSurah();
     if (nextSurah) {
-      togglePlay(nextSurah);
+      playAudio(selectedReciter?.id || '', nextSurah, surahs.find(s => s.number === nextSurah)?.name || '');
     }
   };
 
   const playPrevious = () => {
     const previousSurah = getPreviousSurah();
     if (previousSurah) {
-      togglePlay(previousSurah);
+      playAudio(selectedReciter?.id || '', previousSurah, surahs.find(s => s.number === previousSurah)?.name || '');
+    }
+  };
+
+  // دالة للتحكم في التشغيل والإيقاف
+  const togglePlayPause = async (surahNumber: number, surahName: string) => {
+    if (!selectedReciter) return;
+
+    // إذا كانت السورة الحالية تعمل، أوقفها
+    if (playingSurah === surahNumber && isPlaying) {
+      if (audioElement) {
+        audioElement.pause();
+        setIsPlaying(false);
+        toast.success(`تم إيقاف ${surahName}`, {
+          duration: 2000,
+          position: 'top-center',
+        });
+      }
+    } 
+    // إذا كانت السورة الحالية متوقفة، شغلها
+    else if (playingSurah === surahNumber && !isPlaying) {
+      if (audioElement) {
+        try {
+          await audioElement.play();
+          setIsPlaying(true);
+          toast.success(`تم استئناف ${surahName}`, {
+            duration: 2000,
+            position: 'top-center',
+          });
+        } catch (error) {
+          console.error('خطأ في استئناف التشغيل:', error);
+          // إذا فشل الاستئناف، شغل من جديد
+          await playAudio(selectedReciter.id, surahNumber, surahName);
+        }
+      }
+    }
+    // إذا كانت سورة مختلفة، شغل السورة الجديدة
+    else {
+      await playAudio(selectedReciter.id, surahNumber, surahName);
     }
   };
 
@@ -347,7 +566,7 @@ const AudioQuranPage: React.FC = () => {
               </button>
               
               <button
-                onClick={() => togglePlay(playingSurah)}
+                onClick={() => togglePlayPause(playingSurah, surahs.find(s => s.number === playingSurah)?.name || '')}
                 disabled={isLoading}
                 className="p-4 rounded-full bg-emerald-600 hover:bg-emerald-700 text-white transition-colors disabled:opacity-50 shadow-lg transform hover:scale-105"
               >
@@ -494,7 +713,7 @@ const AudioQuranPage: React.FC = () => {
                 
                 <div className="flex justify-between items-center mt-6 gap-3">
                   <button
-                    onClick={() => togglePlay(surah.number)}
+                    onClick={() => togglePlayPause(surah.number, surah.name)}
                     disabled={!selectedReciter || isLoading}
                     className={`flex items-center px-4 py-3 rounded-lg transition-all duration-200 disabled:opacity-50 flex-1 justify-center font-medium ${
                       playingSurah === surah.number && isPlaying

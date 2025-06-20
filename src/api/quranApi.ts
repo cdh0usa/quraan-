@@ -53,19 +53,7 @@ export const fetchTafseer = async (surahNumber: number, ayahNumber: number): Pro
   }
 };
 
-// Simple reciters list for basic usage - Use famousReciters from data/reciters.ts for full list
-export const getReciters = () => {
-  return [
-    { id: 'husary', name: 'Mahmoud Khalil Al-Husary', arabic_name: 'محمود خليل الحصري' },
-    { id: 'minshawi', name: 'Mohamed Siddiq Al-Minshawi', arabic_name: 'محمد صديق المنشاوي' },
-    { id: 'afasy', name: 'Mishary Rashid Al-Afasy', arabic_name: 'مشاري بن راشد العفاسي' },
-    { id: 'basit', name: 'Abdul Basit Abdul Samad', arabic_name: 'عبد الباسط عبد الصمد' },
-    { id: 'sudais', name: 'Abdul Rahman Al-Sudais', arabic_name: 'عبد الرحمن السديس' },
-    { id: 'shuraim', name: 'Saud Al-Shuraim', arabic_name: 'سعود الشريم' },
-    { id: 'ghamdi', name: 'Saad Al-Ghamdi', arabic_name: 'سعد الغامدي' },
-    { id: 'maher', name: 'Maher Al-Muaiqly', arabic_name: 'ماهر المعيقلي' }
-  ];
-};
+// Note: Reciters are now managed through the database and famousReciters from data/reciters.ts
 
 // Utility function to get audio URL - relies on reciter's audio_base_url
 export const getAudioUrl = (surahNumber: number, reciterBaseUrl: string): string => {
