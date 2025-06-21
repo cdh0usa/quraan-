@@ -2,6 +2,17 @@
   publish = "dist"
   command = "npm run build"
 
+# Local development settings
+[dev]
+  # Command Netlify CLI will run. Must start the Vite dev-server.
+  command = "npm run dev"
+  # Port where Vite serves the app (defaults to 5173). Adjust if you use --port.
+  targetPort = 5173
+  # Port for Netlify proxy (the one you open in your browser). Default 8888.
+  port = 8888
+  # Wait time (ms) before Netlify reports "waiting for server". Optional.
+  timeout = 10000
+
 [[redirects]]
   from = "/*"
   to = "/index.html"

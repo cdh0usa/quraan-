@@ -2,7 +2,23 @@ import axios from 'axios';
 import { Surah, Ayah, Tafseer } from '../types';
 
 const quranBaseUrl = 'https://api.alquran.cloud/v1';
-const tafseerBaseUrl = 'http://api.quran-tafseer.com';
+
+// NOTE:
+// The original tafseer service is only available over HTTP which
+// browsers will block when the site is served over HTTPS (e.g. Netlify).
+// We therefore proxy it through a Netlify Function that runs server-side.
+// During local development (Vite over HTTP) we can still hit the upstream
+// service directly to avoid having to run Netlify Dev.
+
+// New HTTPS-based tafseer endpoint using static JSON from spa5k/tafsir_api via jsDelivr CDN.
+// This source يُتيح CORS بشكل افتراضي ويتميّز بالسرعة والثبات.
+// URL مثال: https://cdn.jsdelivr.net/gh/spa5k/tafsir_api@main/tafsir/ar-tafsir-muyassar/1/1.json
+
+const TAFSIR_EDITION_SLUG = 'ar-tafsir-muyassar';
+
+function getTafseerUrl(surah: number, ayah: number): string {
+  return `https://cdn.jsdelivr.net/gh/spa5k/tafsir_api@main/tafsir/${TAFSIR_EDITION_SLUG}/${surah}/${ayah}.json`;
+}
 
 // Fetch list of all surahs
 export const fetchSurahs = async (): Promise<Surah[]> => {
@@ -40,12 +56,16 @@ export const fetchAyah = async (surahNumber: number, ayahNumber: number): Promis
 // Fetch tafseer (interpretation) for an ayah
 export const fetchTafseer = async (surahNumber: number, ayahNumber: number): Promise<Tafseer> => {
   try {
-    // Using Muyassar tafseer (ID: 1) with the updated API endpoint
-    const response = await axios.get(`${tafseerBaseUrl}/tafseer/1/${surahNumber}/${ayahNumber}`);
+    const url = getTafseerUrl(surahNumber, ayahNumber);
+    const response = await axios.get(url);
+
+    // spa5k response: { "text": "...", ... }
+    const text: string = response.data?.text ?? response.data?.tafsir ?? response.data?.data ?? '';
+
     return {
       ayah: ayahNumber,
       surah: surahNumber,
-      text: response.data.text
+      text,
     };
   } catch (error) {
     console.error(`Error fetching tafseer for ayah ${ayahNumber} from surah ${surahNumber}:`, error);
