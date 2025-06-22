@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Book, Star, Heart, Search, ChevronDown, ChevronUp, Play, Pause, Volume2 } from 'lucide-react';
+import { Book, Star, Heart, Search, ChevronDown, ChevronUp } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 interface ProphetStory {
@@ -282,7 +282,6 @@ const ProphetsStoriesPage: React.FC = () => {
   const [selectedProphet, setSelectedProphet] = useState<ProphetStory | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [favorites, setFavorites] = useState<string[]>([]);
-  const [isReading, setIsReading] = useState(false);
 
   const filteredProphets = prophetStories.filter(prophet =>
     prophet.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -303,25 +302,7 @@ const ProphetsStoriesPage: React.FC = () => {
     );
   };
 
-  const readStory = (text: string) => {
-    if ('speechSynthesis' in window) {
-      if (isReading) {
-        speechSynthesis.cancel();
-        setIsReading(false);
-        return;
-      }
-      
-      const utterance = new SpeechSynthesisUtterance(text);
-      utterance.lang = 'ar-SA';
-      utterance.rate = 0.7;
-      utterance.onend = () => setIsReading(false);
-      speechSynthesis.speak(utterance);
-      setIsReading(true);
-      toast.success('جاري قراءة القصة صوتياً');
-    } else {
-      toast.error('المتصفح لا يدعم القراءة الصوتية');
-    }
-  };
+  // تم إزالة التشغيل الصوتي
 
   return (
     <div className="fade-in">
@@ -434,12 +415,7 @@ const ProphetsStoriesPage: React.FC = () => {
                   <Heart className={`w-6 h-6 ${favorites.includes(selectedProphet.id) ? 'fill-current' : ''}`} />
                 </button>
                 
-                <button
-                  onClick={() => readStory(selectedProphet.fullStory)}
-                  className="p-3 rounded-lg bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-200 dark:hover:bg-emerald-800/50 transition-colors"
-                >
-                  {isReading ? <Pause className="w-6 h-6" /> : <Play className="w-6 h-6" />}
-                </button>
+
               </div>
             </div>
 

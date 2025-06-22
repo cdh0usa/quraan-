@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { 
   BookOpen, 
   MessageSquare, 
@@ -9,12 +9,16 @@ import {
   PlusCircle,
   Mic,
   BarChart3,
-  Shield
+  Shield,
+  LogOut,
+  User
 } from 'lucide-react';
 import { getTableCount, testDatabaseConnection } from '../../services/supabase';
+import { getAuthenticatedUser, logout } from '../../utils/auth';
 import toast from 'react-hot-toast';
 
 const AdminDashboard: React.FC = () => {
+  const navigate = useNavigate();
   const [stats, setStats] = useState({
     hadiths: 0,
     prophets: 0,
@@ -23,6 +27,20 @@ const AdminDashboard: React.FC = () => {
   });
 
   const [loadingStats, setLoadingStats] = useState(false);
+  const [adminUser, setAdminUser] = useState<any>(null);
+
+  // جلب معلومات المستخدم المسجل
+  useEffect(() => {
+    const user = getAuthenticatedUser();
+    setAdminUser(user);
+  }, []);
+
+  // دالة تسجيل الخروج
+  const handleLogout = () => {
+    logout();
+    toast.success('تم تسجيل الخروج بنجاح');
+    navigate('/admin/login');
+  };
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -131,15 +149,35 @@ const AdminDashboard: React.FC = () => {
       {/* Header */}
       <div className="mb-8">
         <div className="bg-gradient-to-r from-emerald-600 to-emerald-800 text-white rounded-lg p-8 shadow-lg">
-          <div className="flex items-center mb-4">
-            <Shield className="w-10 h-10 ml-4" />
-            <div>
-              <h1 className="text-3xl font-bold font-amiri">
-                لوحة التحكم الإدارية
-              </h1>
-              <p className="text-emerald-100 text-lg font-noto-arabic">
-                إدارة شاملة لمحتوى الموقع الإسلامي
-              </p>
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center">
+              <Shield className="w-10 h-10 ml-4" />
+              <div>
+                <h1 className="text-3xl font-bold font-amiri">
+                  لوحة التحكم الإدارية
+                </h1>
+                <p className="text-emerald-100 text-lg font-noto-arabic">
+                  إدارة شاملة لمحتوى الموقع الإسلامي
+                </p>
+              </div>
+            </div>
+            
+            {/* معلومات المستخدم وزر الخروج */}
+            <div className="flex items-center space-x-4 space-x-reverse">
+              <div className="flex items-center bg-white/10 rounded-lg px-4 py-2">
+                <User className="w-5 h-5 ml-2" />
+                <span className="text-sm font-medium">
+                  {adminUser?.email || 'مدير النظام'}
+                </span>
+              </div>
+              <button
+                onClick={handleLogout}
+                className="flex items-center bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg transition-colors duration-200"
+                title="تسجيل الخروج"
+              >
+                <LogOut className="w-5 h-5 ml-2" />
+                <span className="text-sm font-medium">خروج</span>
+              </button>
             </div>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">

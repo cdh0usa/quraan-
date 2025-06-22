@@ -16,11 +16,16 @@ import ChildrenEducationPage from './pages/ChildrenEducationPage';
 import AdhkarPage from './pages/AdhkarPage';
 
 // Admin Pages
+import AdminLoginPage from './pages/admin/AdminLoginPage';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import AdminHadithPage from './pages/admin/AdminHadithPage';
 import AdminProphetsPage from './pages/admin/AdminProphetsPage';
 import AdminAdhkarPage from './pages/admin/AdminAdhkarPage';
 import AdminRecitersPage from './pages/admin/AdminRecitersPage';
+
+// Components
+import ProtectedRoute from './components/ProtectedRoute';
+import AdminRedirect from './components/AdminRedirect';
 
 function App() {
   return (
@@ -61,13 +66,18 @@ function App() {
           <Route path="ruqyah" element={<RuqyahPage />} />
           <Route path="children-education" element={<ChildrenEducationPage />} />
           <Route path="adhkar" element={<AdhkarPage />} />
-          
-          {/* Admin Routes */}
-          <Route path="admin" element={<AdminDashboard />} />
-          <Route path="admin/hadiths" element={<AdminHadithPage />} />
-          <Route path="admin/prophets" element={<AdminProphetsPage />} />
-          <Route path="admin/adhkar" element={<AdminAdhkarPage />} />
-          <Route path="admin/reciters" element={<AdminRecitersPage />} />
+        </Route>
+        
+        {/* Admin Login Route (outside MainLayout) */}
+        <Route path="admin/login" element={<AdminLoginPage />} />
+        
+        {/* Protected Admin Routes */}
+        <Route path="/" element={<MainLayout />}>
+          <Route path="admin" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
+          <Route path="admin/hadiths" element={<ProtectedRoute><AdminHadithPage /></ProtectedRoute>} />
+          <Route path="admin/prophets" element={<ProtectedRoute><AdminProphetsPage /></ProtectedRoute>} />
+          <Route path="admin/adhkar" element={<ProtectedRoute><AdminAdhkarPage /></ProtectedRoute>} />
+          <Route path="admin/reciters" element={<ProtectedRoute><AdminRecitersPage /></ProtectedRoute>} />
         </Route>
       </Routes>
     </Router>

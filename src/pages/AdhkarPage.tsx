@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Sun, Moon, Home, Utensils, Car, Heart, Play, Pause, Copy, Star, Clock } from 'lucide-react';
+import { Sun, Moon, Home, Utensils, Car, Heart, Copy, Star, Clock } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 interface Dhikr {
@@ -297,7 +297,6 @@ const dhikrCategories: DhikrCategory[] = [
 
 const AdhkarPage: React.FC = () => {
   const [selectedCategory, setSelectedCategory] = useState(dhikrCategories[0]);
-  const [playingId, setPlayingId] = useState<string | null>(null);
   const [favorites, setFavorites] = useState<string[]>([]);
   const [counters, setCounters] = useState<{[key: string]: number}>({});
 
@@ -313,26 +312,7 @@ const AdhkarPage: React.FC = () => {
     }
   }, []);
 
-  const playAudio = (dhikr: Dhikr) => {
-    if ('speechSynthesis' in window) {
-      if (playingId === dhikr.id) {
-        speechSynthesis.cancel();
-        setPlayingId(null);
-        return;
-      }
-      
-      speechSynthesis.cancel();
-      const utterance = new SpeechSynthesisUtterance(dhikr.arabic);
-      utterance.lang = 'ar-SA';
-      utterance.rate = 0.7;
-      utterance.onend = () => setPlayingId(null);
-      speechSynthesis.speak(utterance);
-      setPlayingId(dhikr.id);
-      toast.success('جاري تشغيل الذكر صوتياً');
-    } else {
-      toast.error('المتصفح لا يدعم التشغيل الصوتي');
-    }
-  };
+  // تم إزالة التشغيل الصوتي
 
   const copyText = (text: string) => {
     navigator.clipboard.writeText(text);
@@ -486,13 +466,7 @@ const AdhkarPage: React.FC = () => {
                         <Heart className={`w-5 h-5 ${favorites.includes(dhikr.id) ? 'fill-current' : ''}`} />
                       </button>
                       
-                      <button
-                        onClick={() => playAudio(dhikr)}
-                        className="p-2 rounded-lg bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-200 dark:hover:bg-emerald-800/50 transition-colors"
-                        title="تشغيل صوتي"
-                      >
-                        {playingId === dhikr.id ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5" />}
-                      </button>
+
                       
                       <button
                         onClick={() => copyText(dhikr.arabic)}

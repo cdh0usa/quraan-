@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { GraduationCap, Star, Heart, Play, Pause, Volume2, BookOpen, Award, Gift } from 'lucide-react';
+import { GraduationCap, Star, Heart, BookOpen, Award, Gift } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 interface EducationItem {
@@ -270,30 +270,10 @@ const educationCategories: EducationCategory[] = [
 
 const ChildrenEducationPage: React.FC = () => {
   const [selectedCategory, setSelectedCategory] = useState(educationCategories[0]);
-  const [playingId, setPlayingId] = useState<string | null>(null);
   const [completedItems, setCompletedItems] = useState<string[]>([]);
   const [selectedItem, setSelectedItem] = useState<EducationItem | null>(null);
 
-  const playAudio = (content: string, id: string) => {
-    if ('speechSynthesis' in window) {
-      if (playingId === id) {
-        speechSynthesis.cancel();
-        setPlayingId(null);
-        return;
-      }
-      
-      speechSynthesis.cancel();
-      const utterance = new SpeechSynthesisUtterance(content);
-      utterance.lang = 'ar-SA';
-      utterance.rate = 0.6;
-      utterance.onend = () => setPlayingId(null);
-      speechSynthesis.speak(utterance);
-      setPlayingId(id);
-      toast.success('جاري تشغيل الدرس صوتياً');
-    } else {
-      toast.error('المتصفح لا يدعم التشغيل الصوتي');
-    }
-  };
+  // تم إزالة التشغيل الصوتي
 
   const markAsCompleted = (itemId: string) => {
     const newCompleted = completedItems.includes(itemId)
@@ -423,16 +403,7 @@ const ChildrenEducationPage: React.FC = () => {
                       </p>
                     </div>
                     
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        playAudio(item.content, item.id);
-                      }}
-                      className="p-2 rounded-lg bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-200 dark:hover:bg-emerald-800/50 transition-colors"
-                      title="استمع للدرس"
-                    >
-                      {playingId === item.id ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5" />}
-                    </button>
+
                   </div>
                   
                   <p className="text-gray-600 dark:text-gray-400 text-sm mb-4 line-clamp-3">
@@ -478,13 +449,7 @@ const ChildrenEducationPage: React.FC = () => {
                 </p>
               </div>
               
-              <button
-                onClick={() => playAudio(selectedItem.content, selectedItem.id)}
-                className="p-3 rounded-lg bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-200 dark:hover:bg-emerald-800/50 transition-colors"
-                title="استمع للدرس"
-              >
-                {playingId === selectedItem.id ? <Pause className="w-6 h-6" /> : <Volume2 className="w-6 h-6" />}
-              </button>
+
             </div>
 
             {/* المحتوى */}
