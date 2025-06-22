@@ -4,7 +4,6 @@ import { BrowserRouter } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import App from './App';
 import './index.css';
-import './debug-env'; // استيراد مؤقت للتشخيص
 
 // Ensure the root element exists
 const rootElement = document.getElementById('root');
