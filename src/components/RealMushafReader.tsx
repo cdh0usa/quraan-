@@ -59,6 +59,15 @@ const RealMushafReader: React.FC<RealMushafReaderProps> = ({ loading = false }) 
   const [showReciterSelector, setShowReciterSelector] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // حالة قائمة اختيار الجزء
+  const [showJuzSelector, setShowJuzSelector] = useState(false);
+  // حالة حقل إدخال رقم الصفحة
+  const [pageInput, setPageInput] = useState<string>(currentPage.toString());
+
+  // مزامنة حقل إدخال الصفحة مع حالة currentPage
+  useEffect(() => {
+    setPageInput(currentPage.toString());
+  }, [currentPage]);
 
   // تحميل بيانات الصفحة من API
   const loadPageData = async (page: number) => {
@@ -705,7 +714,7 @@ const RealMushafReader: React.FC<RealMushafReaderProps> = ({ loading = false }) 
     stopAudio();
   };
 
-  // الانتقال بين الصفحات
+  // الانتقال بين الصفحات مع تحسينات
   const goToPage = (page: number) => {
     if (page >= 1 && page <= 604) {
       setCurrentPage(page);
@@ -714,10 +723,94 @@ const RealMushafReader: React.FC<RealMushafReaderProps> = ({ loading = false }) 
       stopAudio();
       // إغلاق قائمة القراء عند التنقل
       setShowReciterSelector(false);
+      
+      // إضافة تحديث في التاريخ للتنقل السريع
+      window.history.replaceState(null, '', `?page=${page}`);
+      
+      toast.success(`انتقلت إلى الصفحة ${page}`, {
+        duration: 1500,
+        position: 'bottom-center',
+      });
     }
   };
 
-  // إغلاق قائمة القراء عند النقر خارجها أو الضغط على Escape
+  // تحميل الصفحة من URL عند التحميل الأول
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const pageParam = urlParams.get('page');
+    if (pageParam) {
+      const pageNumber = parseInt(pageParam);
+      if (pageNumber >= 1 && pageNumber <= 604) {
+        setCurrentPage(pageNumber);
+      }
+    }
+  }, []);
+
+  // دالة للانتقال للجزء المحدد
+  const goToJuz = (juzNumber: number) => {
+    // صفحات بداية الأجزاء
+    const juzPages = {
+      1: 1, 2: 22, 3: 42, 4: 62, 5: 82, 6: 102, 7: 122, 8: 142, 9: 162, 10: 182,
+      11: 202, 12: 222, 13: 242, 14: 262, 15: 282, 16: 302, 17: 322, 18: 342, 19: 362, 20: 382,
+      21: 402, 22: 422, 23: 442, 24: 462, 25: 482, 26: 502, 27: 522, 28: 542, 29: 562, 30: 582
+    };
+    
+    const page = juzPages[juzNumber as keyof typeof juzPages];
+    if (page) {
+      goToPage(page);
+    }
+  };
+
+  // دالة للانتقال لسورة محددة
+  const goToSurah = (surahNumber: number) => {
+    // صفحات بداية السور (أهم السور)
+    const surahPages: { [key: number]: number } = {
+      1: 1,    // الفاتحة
+      2: 2,    // البقرة
+      3: 50,   // آل عمران
+      4: 77,   // النساء
+      5: 106,  // المائدة
+      6: 128,  // الأنعام
+      7: 151,  // الأعراف
+      8: 177,  // الأنفال
+      9: 187,  // التوبة
+      10: 208, // يونس
+      11: 221, // هود
+      12: 235, // يوسف
+      13: 249, // الرعد
+      14: 255, // إبراهيم
+      15: 262, // الحجر
+      16: 267, // النحل
+      17: 282, // الإسراء
+      18: 293, // الكهف
+      19: 305, // مريم
+      20: 312, // طه
+      21: 322, // الأنبياء
+      22: 332, // الحج
+      23: 342, // المؤمنون
+      24: 350, // النور
+      25: 359, // الفرقان
+      26: 367, // الشعراء
+      27: 377, // النمل
+      28: 385, // القصص
+      29: 396, // العنكبوت
+      30: 404, // الروم
+      36: 440, // يس
+      55: 531, // الرحمن
+      67: 562, // الملك
+      78: 582, // النبأ
+      112: 604 // الإخلاص
+    };
+    
+    const page = surahPages[surahNumber];
+    if (page) {
+      goToPage(page);
+    } else {
+      toast.error('عذراً، الانتقال المباشر لهذه السورة غير متوفر');
+    }
+  };
+
+  // إغلاق قائمة القراء عند النقر خارجها أو الضغط على Escape + اختصارات التنقل
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       // تحقق من أن النقر ليس داخل مكون القائمة
@@ -728,21 +821,79 @@ const RealMushafReader: React.FC<RealMushafReaderProps> = ({ loading = false }) 
     };
 
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape' && showReciterSelector) {
-        setShowReciterSelector(false);
+      // إذا كان المستخدم يكتب في حقل إدخال، لا تطبق الاختصارات
+      if (event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement) {
+        if (event.key === 'Escape' && showReciterSelector) {
+          setShowReciterSelector(false);
+        }
+        return;
+      }
+
+      switch (event.key) {
+        case 'Escape':
+          if (showReciterSelector) {
+            setShowReciterSelector(false);
+          } else if (selectedAyah) {
+            closeTafseer();
+          }
+          break;
+        case 'ArrowRight':
+          // السهم الأيمن للصفحة السابقة (العربية من اليمين لليسار)
+          event.preventDefault();
+          if (currentPage > 1) {
+            goToPage(currentPage - 1);
+          }
+          break;
+        case 'ArrowLeft':
+          // السهم الأيسر للصفحة التالية
+          event.preventDefault();
+          if (currentPage < 604) {
+            goToPage(currentPage + 1);
+          }
+          break;
+        case 'Home':
+          // العودة للصفحة الأولى
+          event.preventDefault();
+          goToPage(1);
+          break;
+        case 'End':
+          // الذهاب للصفحة الأخيرة
+          event.preventDefault();
+          goToPage(604);
+          break;
+        case '1':
+          // الانتقال سريع للفاتحة
+          event.preventDefault();
+          goToSurah(1);
+          break;
+        case '2':
+          // الانتقال سريع للبقرة
+          event.preventDefault();
+          goToSurah(2);
+          break;
+        case '3':
+          // الانتقال سريع لآل عمران
+          event.preventDefault();
+          goToSurah(3);
+          break;
+        case ' ':
+          // مسافة لإيقاف/تشغيل الصوت
+          event.preventDefault();
+          if (currentSurah && isSurahPlaying) {
+            stopSurahAudio();
+          }
+          break;
       }
     };
 
-    if (showReciterSelector) {
-      document.addEventListener('click', handleClickOutside, true);
-      document.addEventListener('keydown', handleKeyDown);
-    }
+    document.addEventListener('click', handleClickOutside, true);
+    document.addEventListener('keydown', handleKeyDown);
 
     return () => {
       document.removeEventListener('click', handleClickOutside, true);
       document.removeEventListener('keydown', handleKeyDown);
     };
-  }, [showReciterSelector]);
+  }, [showReciterSelector, currentPage, selectedAyah, currentSurah, isSurahPlaying]);
 
   // تحديد إذا كانت الآية محددة
   const isAyahSelected = (surah: number, ayah: number) => {
@@ -943,20 +1094,6 @@ const RealMushafReader: React.FC<RealMushafReaderProps> = ({ loading = false }) 
 
   return (
     <div className="real-mushaf-container">
-      {/* إرشادات الاستخدام */}
-      <div style={{
-        background: 'rgba(16, 185, 129, 0.1)',
-        border: '1px solid rgba(16, 185, 129, 0.3)',
-        borderRadius: '8px',
-        padding: '12px',
-        marginBottom: '20px',
-        textAlign: 'center',
-        color: '#047857',
-        fontSize: '14px'
-      }}>
-انقر على أي آية للاستماع إليها وقراءة تفسيرها
-      </div>
-
       {/* مشغل السور الكاملة */}
       <div style={{
         background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(5, 150, 105, 0.1))',
@@ -1251,45 +1388,61 @@ const RealMushafReader: React.FC<RealMushafReaderProps> = ({ loading = false }) 
         </div>
       </div>
 
-      {/* أزرار التنقل */}
+      {/* أزرار التنقل المحسنة */}
       <div className="mushaf-navigation">
-        <button
-          onClick={() => goToPage(currentPage - 1)}
-          disabled={currentPage === 1}
-          className="nav-button prev"
-        >
-          <ChevronRight className="w-5 h-5" />
-          الصفحة السابقة
-        </button>
-        
-        <div className="page-input-section">
-          <span className="page-info">
-            صفحة {currentPage} من 604
-          </span>
-          <input
-            type="number"
-            min="1"
-            max="604"
-            value={currentPage}
-            onChange={(e) => {
-              const page = parseInt(e.target.value);
-              if (page >= 1 && page <= 604) {
-                goToPage(page);
-              }
-            }}
-            className="page-input"
-            placeholder="رقم الصفحة"
-          />
+        {/* التنقل الأساسي */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '16px', justifyContent: 'center', flexWrap: 'wrap' }}>
+          <button onClick={() => goToPage(currentPage - 1)} disabled={currentPage === 1} className="nav-button prev" style={{ /* unchanged styles */ }}>
+            <ChevronRight className="w-5 h-5" />
+            السابقة
+          </button>
+          
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(5, 150, 105, 0.1))', padding: '16px 20px', borderRadius: '16px', border: '2px solid rgba(16, 185, 129, 0.3)' }}>
+            <span style={{ fontSize: '18px', fontWeight: 'bold', color: '#047857' }}>
+              صفحة {currentPage} من 604
+            </span>
+            <input
+              type="number"
+              min="1"
+              max="604"
+              value={pageInput}
+              onChange={(e) => setPageInput(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  const page = parseInt(pageInput);
+                  if (!isNaN(page) && page >= 1 && page <= 604) {
+                    goToPage(page);
+                  }
+                }
+              }}
+              style={{ width: '80px', padding: '8px 12px', fontSize: '16px', fontWeight: 'bold', border: '2px solid #10b981', borderRadius: '8px', textAlign: 'center', color: '#047857', backgroundColor: 'white' }}
+              placeholder="رقم"
+            />
+          </div>
+          
+          <button onClick={() => goToPage(currentPage + 1)} disabled={currentPage === 604} className="nav-button next" style={{ /* unchanged styles */ }}>
+            التالية
+            <ChevronLeft className="w-5 h-5" />
+          </button>
         </div>
-        
-        <button
-          onClick={() => goToPage(currentPage + 1)}
-          disabled={currentPage === 604}
-          className="nav-button next"
-        >
-          الصفحة التالية
-          <ChevronLeft className="w-5 h-5" />
-        </button>
+
+        {/* اختيار الجزء */}
+        <div style={{ position: 'relative', textAlign: 'center', marginBottom: '16px' }} data-juz-selector>
+          <button onClick={() => setShowJuzSelector(!showJuzSelector)} style={{ padding: '8px 12px', backgroundColor: '#10b981', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontSize: '14px', fontWeight: '600' }}>
+            جزء {pageData?.juz || 1}
+          </button>
+          {showJuzSelector && (
+            <div style={{ position: 'absolute', top: '100%', left: '50%', transform: 'translateX(-50%)', background: 'white', border: '1px solid #10b981', borderRadius: '8px', boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)', zIndex: 50 }}>
+              {Array.from({ length: 30 }, (_, idx) => idx + 1).map(juzNum => (
+                <button key={juzNum} onClick={() => { goToJuz(juzNum); setShowJuzSelector(false); }} style={{ display: 'block', width: '100%', padding: '8px 12px', textAlign: 'center', border: 'none', background: pageData?.juz === juzNum ? '#10b981' : 'white', color: pageData?.juz === juzNum ? 'white' : '#047857', cursor: 'pointer' }}>
+                  جزء {juzNum}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* التنقل السريع بين السور - محذوف */}
       </div>
 
       {/* مؤشر الصوت */}

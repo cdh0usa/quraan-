@@ -21,6 +21,23 @@ interface Reciter {
   description?: string;
 }
 
+// إضافة دالة مساعدة لتطبيع النص العربي وإزالة التشكيل
+function normalizeArabic(text: string): string {
+  return text
+    // إزالة التشكيل وعلامات التشكيل
+    .replace(/[\u064B-\u0652\u0670\u0640]/g, '')
+    // توحيد أشكال الألف
+    .replace(/[إأآ]/g, 'ا')
+    // توحيد الياء والألف المقصورة
+    .replace(/ى/g, 'ي')
+    // توحيد الهمزات على السطر
+    .replace(/ؤ/g, 'و')
+    .replace(/ئ/g, 'ي')
+    // إزالة المسافات الزائدة وتحويل للنص الأصغر
+    .trim()
+    .toLowerCase();
+}
+
 const AudioQuranPage: React.FC = () => {
   const [surahs, setSurahs] = useState<Surah[]>([]);
   const [filteredSurahs, setFilteredSurahs] = useState<Surah[]>([]);
@@ -36,6 +53,14 @@ const AudioQuranPage: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // حالة حقل إدخال رقم السورة للتنقل السريع
+  const [surahInput, setSurahInput] = useState<string>('');
+  // مزامنة حقل الإدخال مع السورة الحالية عند التغيير
+  useEffect(() => {
+    if (playingSurah) {
+      setSurahInput(playingSurah.toString());
+    }
+  }, [playingSurah]);
 
   // Fetch surahs and reciters on component mount
   useEffect(() => {
@@ -94,9 +119,25 @@ const AudioQuranPage: React.FC = () => {
     const handlePlay = () => setIsPlaying(true);
     const handlePause = () => setIsPlaying(false);
     const handleEnded = () => {
-      setPlayingSurah(null);
       setCurrentTime(0);
       setIsPlaying(false);
+      
+      // Auto-play next surah if available
+      if (playingSurah && playingSurah < 114 && selectedReciter) {
+        toast.success('انتهت السورة. سأقوم بتشغيل السورة التالية...', {
+          duration: 3000,
+          icon: '⏭️'
+        });
+        setTimeout(() => {
+          handleAutoNext();
+        }, 2000);
+      } else {
+        setPlayingSurah(null);
+        toast.success('تم انتهاء التلاوة. جزاك الله خيراً', {
+          duration: 4000,
+          icon: '🤲'
+        });
+      }
     };
     const handleError = (e: any) => {
       console.error('Audio error:', {
@@ -153,17 +194,22 @@ const AudioQuranPage: React.FC = () => {
     };
   }, []);
 
-  // Handle search query changes
+  // Handle search query changes (مع تجاهل التشكيل)
   useEffect(() => {
-    if (searchQuery.trim() === '') {
+    const query = normalizeArabic(searchQuery);
+
+    if (query === '') {
       setFilteredSurahs(surahs);
     } else {
-      const filtered = surahs.filter(
-        (surah) =>
-          surah.name.includes(searchQuery) ||
-          surah.englishName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          surah.number.toString() === searchQuery
-      );
+      const filtered = surahs.filter((surah) => {
+        const normalizedName = normalizeArabic(surah.name);
+        const normalizedEnglish = surah.englishName.toLowerCase();
+        return (
+          normalizedName.includes(query) ||
+          normalizedEnglish.includes(query) ||
+          surah.number.toString() === query
+        );
+      });
       setFilteredSurahs(filtered);
     }
   }, [searchQuery, surahs]);
@@ -463,29 +509,60 @@ const AudioQuranPage: React.FC = () => {
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
-  // Get next/previous surah
-  const getNextSurah = () => {
-    if (!playingSurah) return null;
-    return playingSurah < 114 ? playingSurah + 1 : 1;
+  // Get next/previous surah with enhanced logic
+  const getNextSurah = (current?: number) => {
+    const surahNum = current || playingSurah;
+    if (!surahNum) return null;
+    return surahNum < 114 ? surahNum + 1 : 1;
   };
 
-  const getPreviousSurah = () => {
-    if (!playingSurah) return null;
-    return playingSurah > 1 ? playingSurah - 1 : 114;
+  const getPreviousSurah = (current?: number) => {
+    const surahNum = current || playingSurah;
+    if (!surahNum) return null;
+    return surahNum > 1 ? surahNum - 1 : 114;
   };
 
-  // Handle next/previous
-  const playNext = () => {
+  // Enhanced next/previous with better feedback
+  const playNext = async () => {
     const nextSurah = getNextSurah();
-    if (nextSurah) {
-      playAudio(selectedReciter?.id || '', nextSurah, surahs.find(s => s.number === nextSurah)?.name || '');
+    if (nextSurah && selectedReciter) {
+      const surahName = surahs.find(s => s.number === nextSurah)?.name || '';
+      toast.success(`التالية: ${surahName}`, { duration: 2000 });
+      await playAudio(selectedReciter.id, nextSurah, surahName);
     }
   };
 
-  const playPrevious = () => {
+  const playPrevious = async () => {
     const previousSurah = getPreviousSurah();
-    if (previousSurah) {
-      playAudio(selectedReciter?.id || '', previousSurah, surahs.find(s => s.number === previousSurah)?.name || '');
+    if (previousSurah && selectedReciter) {
+      const surahName = surahs.find(s => s.number === previousSurah)?.name || '';
+      toast.success(`السابقة: ${surahName}`, { duration: 2000 });
+      await playAudio(selectedReciter.id, previousSurah, surahName);
+    }
+  };
+
+  // Jump to specific surah number
+  const jumpToSurah = async (surahNumber: number) => {
+    if (selectedReciter && surahNumber >= 1 && surahNumber <= 114) {
+      const surahName = surahs.find(s => s.number === surahNumber)?.name || '';
+      await playAudio(selectedReciter.id, surahNumber, surahName);
+    }
+  };
+
+  // Auto-play next surah when current ends
+  const handleAutoNext = () => {
+    if (playingSurah && playingSurah < 114) {
+      const nextSurah = getNextSurah();
+      if (nextSurah && selectedReciter) {
+        const surahName = surahs.find(s => s.number === nextSurah)?.name || '';
+        toast(`تشغيل تلقائي: ${surahName}`, { 
+          duration: 3000,
+          icon: '▶️'
+        });
+        setTimeout(() => {
+          playAudio(selectedReciter.id, nextSurah, surahName);
+        }, 2000);
+      }
     }
   };
 
@@ -538,7 +615,7 @@ const AudioQuranPage: React.FC = () => {
         </p>
       </div>
 
-      {/* Audio Player Controls */}
+                {/* Enhanced Audio Player Controls */}
       {playingSurah && (
         <div className="bg-gradient-to-r from-emerald-50 to-emerald-100 dark:from-emerald-900/30 dark:to-emerald-800/30 rounded-xl shadow-lg p-6 mb-6 sticky top-4 z-10 border border-emerald-200 dark:border-emerald-700">
           <div className="flex items-center justify-between mb-4">
@@ -560,9 +637,9 @@ const AudioQuranPage: React.FC = () => {
               <button
                 onClick={playPrevious}
                 className="p-3 rounded-full bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors shadow-md"
-                title="السورة السابقة"
+                title={`السورة السابقة: ${surahs.find(s => s.number === getPreviousSurah())?.name || ''}`}
               >
-                <SkipBack className="w-5 h-5 text-emerald-600 dark:text-emerald-500" />
+                <SkipForward className="w-5 h-5 text-emerald-600 dark:text-emerald-500" />
               </button>
               
               <button
@@ -582,11 +659,48 @@ const AudioQuranPage: React.FC = () => {
               <button
                 onClick={playNext}
                 className="p-3 rounded-full bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors shadow-md"
-                title="السورة التالية"
+                title={`السورة التالية: ${surahs.find(s => s.number === getNextSurah())?.name || ''}`}
               >
-                <SkipForward className="w-5 h-5 text-emerald-600 dark:text-emerald-500" />
+                <SkipBack className="w-5 h-5 text-emerald-600 dark:text-emerald-500" />
               </button>
             </div>
+          </div>
+
+          {/* شريط تنقل السور */}
+          <div className="audio-navigation mb-4 flex items-center justify-center gap-4">
+            <button
+              onClick={playPrevious}
+              disabled={!playingSurah}
+              className="px-4 py-2 bg-white border border-emerald-300 rounded hover:bg-emerald-100 disabled:opacity-50"
+            >
+              ← السابقة
+            </button>
+            <div className="flex items-center gap-2">
+              <input
+                type="number"
+                min="1"
+                max="114"
+                value={surahInput}
+                onChange={(e) => setSurahInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    const num = parseInt(surahInput);
+                    if (!isNaN(num) && num >= 1 && num <= 114) {
+                      jumpToSurah(num);
+                    }
+                  }
+                }}
+                className="w-20 p-2 border border-emerald-300 rounded text-center"
+              />
+              <span>/ 114</span>
+            </div>
+            <button
+              onClick={playNext}
+              disabled={!playingSurah}
+              className="px-4 py-2 bg-white border border-emerald-300 rounded hover:bg-emerald-100 disabled:opacity-50"
+            >
+              التالية →
+            </button>
           </div>
           
           {/* Progress Bar */}
