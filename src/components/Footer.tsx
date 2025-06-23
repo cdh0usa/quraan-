@@ -18,7 +18,7 @@ const Footer: React.FC = () => {
             
             {/* WhatsApp Group Link */}
             <a 
-              href="https://chat.whatsapp.com/YOUR_GROUP_INVITE_CODE" 
+              href="https://chat.whatsapp.com/KAfa2oGkc5I5N2S2K1D4rt" 
               target="_blank" 
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg transition-colors duration-200 text-sm"
