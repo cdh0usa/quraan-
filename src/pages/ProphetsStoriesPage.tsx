@@ -5979,12 +5979,40 @@ const ProphetsStoriesPage: React.FC = () => {
   const [selectedProphet, setSelectedProphet] = useState<ProphetStory | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [favorites, setFavorites] = useState<string[]>([]);
+  // تخزين آخر قصة نقرت عليها لإظهارها أولاً في القائمة
+  const [lastClickedId, setLastClickedId] = useState<string | null>(null);
 
-  const filteredProphets = prophetStories.filter(prophet =>
+  // فلترة القصص أولاً
+  let filteredProphets = prophetStories.filter(prophet =>
     prophet.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     prophet.arabicName.includes(searchQuery) ||
     prophet.title.includes(searchQuery)
   );
+  
+  // إذا تم النقر على قصة، أظهرها أولاً في القائمة عند العودة (فقط في القائمة الرئيسية)
+  if (lastClickedId && !selectedProphet) {
+    console.log('إعادة ترتيب القائمة، آخر قصة منقورة:', lastClickedId);
+    // البحث عن القصة المنقورة في القائمة الأصلية
+    const clickedProphet = prophetStories.find(p => p.id === lastClickedId);
+    if (clickedProphet) {
+      console.log('تم العثور على القصة المنقورة:', clickedProphet.arabicName);
+      // التأكد من أن القصة تطابق البحث الحالي (إذا كان هناك بحث)
+      const matchesSearch = searchQuery === '' || 
+        clickedProphet.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        clickedProphet.arabicName.includes(searchQuery) ||
+        clickedProphet.title.includes(searchQuery);
+      
+      console.log('تطابق البحث:', matchesSearch, 'البحث الحالي:', searchQuery);
+        
+      if (matchesSearch) {
+        console.log('سيتم نقل القصة للمقدمة');
+        // إزالة القصة من موقعها الحالي وإضافتها في المقدمة
+        filteredProphets = filteredProphets.filter(p => p.id !== lastClickedId);
+        filteredProphets.unshift(clickedProphet);
+        console.log('القصة الأولى الآن:', filteredProphets[0]?.arabicName);
+      }
+    }
+  }
 
   const toggleFavorite = (prophetId: string) => {
     const newFavorites = favorites.includes(prophetId)
@@ -6033,7 +6061,11 @@ const ProphetsStoriesPage: React.FC = () => {
             <div 
               key={prophet.id}
               className="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden border border-gray-200 dark:border-gray-700 transform hover:scale-105 transition-all duration-300 cursor-pointer"
-              onClick={() => setSelectedProphet(prophet)}
+              onClick={() => {
+                console.log('تم النقر على قصة:', prophet.arabicName, 'ID:', prophet.id);
+                setLastClickedId(prophet.id);
+                setSelectedProphet(prophet);
+              }}
             >
               <div className="h-32 bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center">
                 <span className="text-6xl">{prophet.coverImage}</span>
@@ -6147,7 +6179,7 @@ const ProphetsStoriesPage: React.FC = () => {
               <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-4 font-amiri">المعجزات</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {selectedProphet.specialMiracles.map((miracle, index) => (
-                  <div key={index} className="flex items-center p-3 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg">
+                  <div key={`miracle-${selectedProphet.id}-${index}`} className="flex items-center p-3 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg">
                     <Star className="w-5 h-5 text-yellow-600 dark:text-yellow-400 ml-3 flex-shrink-0" />
                     <span className="text-gray-700 dark:text-gray-300">{miracle}</span>
                   </div>
@@ -6160,7 +6192,7 @@ const ProphetsStoriesPage: React.FC = () => {
               <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-4 font-amiri">المراجع القرآنية</h2>
               <div className="space-y-2">
                 {selectedProphet.quranReferences.map((ref, index) => (
-                  <div key={index} className="flex items-center p-3 bg-emerald-50 dark:bg-emerald-900/20 rounded-lg">
+                  <div key={`quran-${selectedProphet.id}-${index}`} className="flex items-center p-3 bg-emerald-50 dark:bg-emerald-900/20 rounded-lg">
                     <Book className="w-5 h-5 text-emerald-600 dark:text-emerald-400 ml-3 flex-shrink-0" />
                     <span className="text-gray-700 dark:text-gray-300 font-medium">{ref}</span>
                   </div>
@@ -6173,7 +6205,7 @@ const ProphetsStoriesPage: React.FC = () => {
               <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-4 font-amiri">الدروس والعبر</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {selectedProphet.lessons.map((lesson, index) => (
-                  <div key={index} className="flex items-start p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                  <div key={`lesson-${selectedProphet.id}-${index}`} className="flex items-start p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
                     <div className="w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-bold ml-3 mt-0.5 flex-shrink-0">
                       {index + 1}
                     </div>

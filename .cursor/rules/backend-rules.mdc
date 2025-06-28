@@ -1,0 +1,20 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+---
+description: 
+globs: 
+alwaysApply: false
+---
+اي حقل او ميزة او ما شبه تقوم بانشاءه في التطبيق او المشروع، قم بأنشاء Sql Script له في ملف backend-script.sql في المشروع
+
+واذا كان ملف "backend-script.sql" غير موجود، قم بأنشاءه، وقبل اي تحديل افحص الملف وافهمه، حتى تمنع التكرار.
+
+حتى لو كان التطبيق بالكامل محليا، قم ايضا بأنشاء sql Script لأي ميزة او حقل او اي شيئ تقوم بأنشاءه واضفها في ملف backend-script.sql
+
+
+ودائمًا قم بفحص وبتحديث ملف backend-script.sql دائما اثناء العمل على التطبيق
+
+

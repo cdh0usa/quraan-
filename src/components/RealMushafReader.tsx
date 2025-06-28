@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { Tafseer } from '../types';
-import { fetchTafseer } from '../api/quranApi';
+import { Tafseer, Surah } from '../types';
+import { fetchTafseer, fetchSurahs, fetchAyah } from '../api/quranApi';
 import { getReciters } from '../services/supabase';
 import { famousReciters } from '../data/reciters';
 import { Book, X, ChevronLeft, ChevronRight, Loader2, Volume2, Play, Pause, SkipForward, SkipBack } from 'lucide-react';
@@ -38,6 +38,29 @@ interface RealMushafReaderProps {
 }
 
 const RealMushafReader: React.FC<RealMushafReaderProps> = ({ loading = false }) => {
+  // Request Notification permission on mount
+  React.useEffect(() => {
+    if ('Notification' in window && Notification.permission === 'default') {
+      Notification.requestPermission();
+    }
+  }, []);
+
+  // Helper to show notifications for surah events
+  const showSurahNotification = (title: string, options: NotificationOptions, onClick?: () => void) => {
+    if (!('Notification' in window)) return;
+    if (Notification.permission === 'granted') {
+      const notif = new Notification(title, options);
+      if (onClick) notif.onclick = () => { window.focus(); onClick(); };
+    } else if (Notification.permission !== 'denied') {
+      Notification.requestPermission().then(permission => {
+        if (permission === 'granted') {
+          const notif = new Notification(title, options);
+          if (onClick) notif.onclick = () => { window.focus(); onClick(); };
+        }
+      });
+    }
+  };
+
   const [currentPage, setCurrentPage] = useState(1);
   const [pageData, setPageData] = useState<PageData | null>(null);
   const [selectedAyah, setSelectedAyah] = useState<{surah: number, ayah: number} | null>(null);
@@ -63,6 +86,19 @@ const RealMushafReader: React.FC<RealMushafReaderProps> = ({ loading = false }) 
   const [showJuzSelector, setShowJuzSelector] = useState(false);
   // حالة حقل إدخال رقم الصفحة
   const [pageInput, setPageInput] = useState<string>(currentPage.toString());
+  // قائمة وأزرار اختيار السور
+  const [surahsList, setSurahsList] = useState<Surah[]>([]);
+  const [showSurahSelector, setShowSurahSelector] = useState(false);
+
+  const getRevelationTypeArabic = (type: string) => {
+    const lowerType = type.toLowerCase();
+    if (lowerType === 'meccan') return 'مكية';
+    if (lowerType === 'medinan') return 'مدنية';
+    return type;
+  };
+
+  const currentFirstSurahNumber = pageData?.ayahs[0]?.surah;
+  const currentSurahInfo = surahsList.find(s => s.number === currentFirstSurahNumber);
 
   // مزامنة حقل إدخال الصفحة مع حالة currentPage
   useEffect(() => {
@@ -326,11 +362,6 @@ const RealMushafReader: React.FC<RealMushafReaderProps> = ({ loading = false }) 
     } finally {
       setTafseerLoading(false);
     }
-
-    // تشغيل الصوت تلقائياً
-    setTimeout(() => {
-      playAyahAudio(surah, ayah);
-    }, 500);
   };
 
   // دالة تشغيل صوت الآية
@@ -451,139 +482,12 @@ const RealMushafReader: React.FC<RealMushafReaderProps> = ({ loading = false }) 
     }
   };
 
-  // الحصول على روابط صوت السورة
+  // الحصول على روابط صوت السورة (الرئيسية والاحتياطية)
   const getSurahAudioUrls = (surahNumber: number, reciter: Reciter) => {
-    const formattedSurahNumber = surahNumber.toString().padStart(3, '0');
-    const baseUrl = reciter.audio_base_url;
-    
-    // روابط أساسية
-    const urls = [
-      `${baseUrl}/${formattedSurahNumber}.mp3`,
-      `${baseUrl}/${surahNumber}.mp3`
-    ];
-    
-    // إضافة روابط بديلة حسب القارئ (أسماء محدثة)
-    switch (reciter.id) {
-      case 'mishari_alafasy':
-        urls.push(
-          `https://audio.qurancdn.com/Alafasy_128kbps/${formattedSurahNumber}.mp3`,
-          `https://cdn.islamic.network/quran/audio/128/ar.alafasy/${surahNumber}.mp3`,
-          `https://everyayah.com/data/Alafasy_128kbps/${formattedSurahNumber}.mp3`
-        );
-        break;
-      
-      case 'husary':
-        urls.push(
-          `https://audio.qurancdn.com/Husary_128kbps/${formattedSurahNumber}.mp3`,
-          `https://cdn.islamic.network/quran/audio/128/ar.husary/${surahNumber}.mp3`,
-          `https://everyayah.com/data/Husary_128kbps/${formattedSurahNumber}.mp3`
-        );
-        break;
-      
-      case 'abdul_basit':
-        urls.push(
-          `https://audio.qurancdn.com/Abdul_Basit_Murattal_192kbps/${formattedSurahNumber}.mp3`,
-          `https://cdn.islamic.network/quran/audio/128/ar.abdulbasitmurattal/${surahNumber}.mp3`,
-          `https://everyayah.com/data/Abdul_Basit_Murattal_64kbps/${formattedSurahNumber}.mp3`
-        );
-        break;
-      
-      case 'minshawi':
-        urls.push(
-          `https://audio.qurancdn.com/Minshawi_Murattal_128kbps/${formattedSurahNumber}.mp3`,
-          `https://cdn.islamic.network/quran/audio/128/ar.minshawi/${surahNumber}.mp3`,
-          `https://everyayah.com/data/Minshawi_Murattal_128kbps/${formattedSurahNumber}.mp3`
-        );
-        break;
-      
-      case 'abdurrahman_sudais':
-        urls.push(
-          `https://audio.qurancdn.com/Sudais_128kbps/${formattedSurahNumber}.mp3`,
-          `https://cdn.islamic.network/quran/audio/128/ar.abdurrahmaansudais/${surahNumber}.mp3`
-        );
-        break;
-      
-      case 'saud_alshuraim':
-        urls.push(
-          `https://audio.qurancdn.com/Shuraim_128kbps/${formattedSurahNumber}.mp3`,
-          `https://cdn.islamic.network/quran/audio/128/ar.saoodshuraym/${surahNumber}.mp3`
-        );
-        break;
-      
-      case 'saad_alghamdi':
-        urls.push(
-          `https://audio.qurancdn.com/Ghamdi_40kbps/${formattedSurahNumber}.mp3`,
-          `https://cdn.islamic.network/quran/audio/128/ar.saadalghamdi/${surahNumber}.mp3`
-        );
-        break;
-      
-      case 'maher_almuaiqly':
-        urls.push(
-          `https://audio.qurancdn.com/Maher_AlMuaiqly_64kbps/${formattedSurahNumber}.mp3`,
-          `https://cdn.islamic.network/quran/audio/128/ar.maheralmuaiqly/${surahNumber}.mp3`
-        );
-        break;
-      
-      case 'yasser_aldosari':
-        urls.push(
-          `https://audio.qurancdn.com/Yasser_Ad-Dussary_128kbps/${formattedSurahNumber}.mp3`,
-          `https://cdn.islamic.network/quran/audio/128/ar.yasserdussary/${surahNumber}.mp3`
-        );
-        break;
-      
-      case 'ahmad_alajmi':
-        urls.push(
-          `https://audio.qurancdn.com/Ahmed_ibn_Ali_al-Ajamy_128kbps_ketaballah.net/${formattedSurahNumber}.mp3`,
-          `https://everyayah.com/data/Ahmed_ibn_Ali_al-Ajamy_128kbps_ketaballah.net/${formattedSurahNumber}.mp3`
-        );
-        break;
-      
-      case 'khaled_aljalil':
-        urls.push(
-          `https://server11.mp3quran.net/jalil/${formattedSurahNumber}.mp3`,
-          `https://cdn.islamic.network/quran/audio/128/ar.khaledjalil/${surahNumber}.mp3`
-        );
-        break;
-      
-      case 'abdullah_basfar':
-        urls.push(
-          `https://server7.mp3quran.net/basfer/${formattedSurahNumber}.mp3`,
-          `https://cdn.islamic.network/quran/audio/128/ar.abdullahbasfar/${surahNumber}.mp3`
-        );
-        break;
-      
-      case 'fahd_alkandari':
-        urls.push(
-          `https://server8.mp3quran.net/kndri/${formattedSurahNumber}.mp3`,
-          `https://cdn.islamic.network/quran/audio/128/ar.fahdalkandari/${surahNumber}.mp3`
-        );
-        break;
-        
-      case 'muhammad_ayyub':
-        urls.push(
-          `https://server10.mp3quran.net/ayyub/${formattedSurahNumber}.mp3`,
-          `https://cdn.islamic.network/quran/audio/128/ar.muhammadayyub/${surahNumber}.mp3`
-        );
-        break;
-      
-      case 'ali_jaber':
-        urls.push(
-          `https://server13.mp3quran.net/jaber/${formattedSurahNumber}.mp3`,
-          `https://cdn.islamic.network/quran/audio/128/ar.alijaber/${surahNumber}.mp3`
-        );
-        break;
-      
-      default:
-        // للقراء الآخرين، إضافة روابط احتياطية موثوقة
-        urls.push(
-          `https://cdn.islamic.network/quran/audio/128/ar.husary/${surahNumber}.mp3`,
-          `https://audio.qurancdn.com/Husary_128kbps/${formattedSurahNumber}.mp3`,
-          `https://server13.mp3quran.net/husr/${formattedSurahNumber}.mp3`
-        );
-        break;
-    }
-    
-    return urls;
+    // استخدام الدالة المستوردة للحصول على الرابط الأساسي والاحتياطية
+    const primaryUrl = getAudioUrl(reciter.id, surahNumber);
+    const fallbackUrls = getFallbackAudioUrls(reciter.id, surahNumber);
+    return [primaryUrl, ...fallbackUrls];
   };
 
   // تشغيل/إيقاف السورة كاملة
@@ -602,6 +506,16 @@ const RealMushafReader: React.FC<RealMushafReaderProps> = ({ loading = false }) 
       try {
         await surahAudioRef.play();
         setIsSurahPlaying(true);
+        // show browser notification on start
+        showSurahNotification(
+          `بدء تشغيل ${getSurahName(surahNumber)}`,
+          { body: selectedReciter.arabic_name, tag: `surah-start-${surahNumber}` }
+        );
+        toast.success(`يتم تشغيل ${getSurahName(surahNumber)} بصوت ${selectedReciter.arabic_name}`, {
+          duration: 4000,
+          position: 'top-center'
+        });
+        return;
       } catch (error) {
         console.error('Error resuming surah audio:', error);
       }
@@ -746,6 +660,19 @@ const RealMushafReader: React.FC<RealMushafReaderProps> = ({ loading = false }) 
     }
   }, []);
 
+  // تحميل قائمة السور للفهرس الصغير
+  useEffect(() => {
+    const loadSurahsList = async () => {
+      try {
+        const list = await fetchSurahs();
+        setSurahsList(list);
+      } catch (error) {
+        console.error('Error fetching surahs for index:', error);
+      }
+    };
+    loadSurahsList();
+  }, []);
+
   // دالة للانتقال للجزء المحدد
   const goToJuz = (juzNumber: number) => {
     // صفحات بداية الأجزاء
@@ -761,9 +688,9 @@ const RealMushafReader: React.FC<RealMushafReaderProps> = ({ loading = false }) 
     }
   };
 
-  // دالة للانتقال لسورة محددة
-  const goToSurah = (surahNumber: number) => {
-    // صفحات بداية السور (أهم السور)
+  // دالة للانتقال لسورة محددة مع دعم ديناميكي لكافة السور
+  const goToSurah = async (surahNumber: number) => {
+    // صفحات بداية السور المعروفة
     const surahPages: { [key: number]: number } = {
       1: 1,    // الفاتحة
       2: 2,    // البقرة
@@ -801,13 +728,21 @@ const RealMushafReader: React.FC<RealMushafReaderProps> = ({ loading = false }) 
       78: 582, // النبأ
       112: 604 // الإخلاص
     };
-    
-    const page = surahPages[surahNumber];
-    if (page) {
-      goToPage(page);
-    } else {
-      toast.error('عذراً، الانتقال المباشر لهذه السورة غير متوفر');
+    let targetPage = surahPages[surahNumber];
+    // إذا لم توجد خريطة ثابتة، جلب أول آية لتحديد الصفحة ديناميكياً
+    if (!targetPage) {
+      try {
+        toast.loading(`جاري تحديد موقع سورة ${surahNumber}...`, { id: 'goToSurah' });
+        const ayahData = await fetchAyah(surahNumber, 1);
+        targetPage = ayahData.page;
+        toast.success(`تم تحديد موقع السورة في الصفحة ${targetPage}`, { id: 'goToSurah' });
+      } catch (error) {
+        console.error(`خطأ في تحديد صفحة السورة ${surahNumber}:`, error);
+        toast.error('عذراً، الانتقال المباشر لهذه السورة غير متوفر', { id: 'goToSurah' });
+        return;
+      }
     }
+    goToPage(targetPage);
   };
 
   // إغلاق قائمة القراء عند النقر خارجها أو الضغط على Escape + اختصارات التنقل
@@ -1341,10 +1276,10 @@ const RealMushafReader: React.FC<RealMushafReaderProps> = ({ loading = false }) 
         {/* رأس الصفحة */}
         <div className="mushaf-header">
           <div className="surah-name">
-            {pageData?.surah_name || ''}
+            {currentSurahInfo?.name || pageData?.surah_name || ''}
           </div>
           <div className="juz-number">
-            الجزء {pageData?.juz || ''}
+            الجزء {pageData?.juz || ''}{currentSurahInfo ? ` - ${getRevelationTypeArabic(currentSurahInfo.revelationType)}` : ''}
           </div>
         </div>
 
@@ -1352,26 +1287,40 @@ const RealMushafReader: React.FC<RealMushafReaderProps> = ({ loading = false }) 
         <div className="mushaf-content">
           {pageData?.ayahs && pageData.ayahs.length > 0 ? (
             pageData.ayahs.map((ayah, index) => {
-              console.log(`Rendering ayah ${index + 1}:`, ayah); // Debug log
+              const prevSurah = index > 0 ? pageData.ayahs[index - 1].surah : null;
+              const isNewSurah = index > 0 && ayah.surah !== prevSurah;
+              const surahInfo = surahsList.find(s => s.number === ayah.surah);
               return (
-                <span
-                  key={`${ayah.surah}:${ayah.ayah}`}
-                  className={`ayah-text ${isAyahSelected(ayah.surah, ayah.ayah) ? 'selected' : ''}`}
-                  onClick={() => handleAyahClick(ayah.surah, ayah.ayah)}
-                  style={{ 
-                    display: 'inline',
-                    fontSize: '24px',
-                    lineHeight: '2.8',
-                    color: 'inherit',
-                    fontFamily: "'Amiri', serif"
-                  }}
-                >
-                  {ayah.text || 'نص غير متوفر'}
-                  <span className="ayah-number" style={{ color: '#10b981', fontWeight: 'bold', margin: '0 5px' }}>
-                    ﴿{ayah.ayah}﴾
+                <React.Fragment key={`${ayah.surah}:${ayah.ayah}`}>
+                  {isNewSurah && (
+                    <div className="surah-separator" style={{ textAlign: 'center', margin: '24px 0' }}>
+                      <div className="surah-separator-name" style={{ fontSize: '24px', fontWeight: 'bold', marginBottom: '8px' }}>
+                        سورة {surahInfo?.name}
+                      </div>
+                      <div className="surah-separator-meta" style={{ color: '#6b7280', fontSize: '14px' }}>
+                        الجزء {pageData.juz} - {getRevelationTypeArabic(surahInfo?.revelationType || '')}
+                      </div>
+                    </div>
+                  )}
+                  <span
+                    key={`${ayah.surah}:${ayah.ayah}`}
+                    className={`ayah-text ${isAyahSelected(ayah.surah, ayah.ayah) ? 'selected' : ''}`}
+                    onClick={() => handleAyahClick(ayah.surah, ayah.ayah)}
+                    style={{
+                      display: 'inline',
+                      fontSize: '24px',
+                      lineHeight: '2.8',
+                      color: 'inherit',
+                      fontFamily: "'Amiri', serif"
+                    }}
+                  >
+                    {ayah.text || 'نص غير متوفر'}
+                    <span className="ayah-number" style={{ color: '#10b981', fontWeight: 'bold', margin: '0 5px' }}>
+                      ﴿{ayah.ayah}﴾
+                    </span>
+                    {index < pageData.ayahs.length - 1 && ' '}
                   </span>
-                  {index < pageData.ayahs.length - 1 && ' '}
-                </span>
+                </React.Fragment>
               );
             })
           ) : (
@@ -1442,7 +1391,25 @@ const RealMushafReader: React.FC<RealMushafReaderProps> = ({ loading = false }) 
           )}
         </div>
 
-        {/* التنقل السريع بين السور - محذوف */}
+        {/* التنقل السريع بين السور */}
+        <div style={{ position: 'relative', textAlign: 'center', marginBottom: '16px' }} data-surah-selector>
+          <button onClick={() => setShowSurahSelector(!showSurahSelector)} style={{ padding: '8px 12px', backgroundColor: '#10b981', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontSize: '14px', fontWeight: '600' }}>
+            اختر سورة
+          </button>
+          {showSurahSelector && (
+            <div style={{ position: 'absolute', top: '100%', left: '50%', transform: 'translateX(-50%)', background: 'white', border: '1px solid #10b981', borderRadius: '8px', boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)', zIndex: 50, maxHeight: '300px', overflowY: 'auto', minWidth: '200px' }}>
+              {surahsList.map(surah => (
+                <button
+                  key={surah.number}
+                  onClick={() => { goToSurah(surah.number); setShowSurahSelector(false); }}
+                  style={{ display: 'block', width: '100%', padding: '8px 12px', textAlign: 'center', border: 'none', background: pageData?.ayahs[0]?.surah === surah.number ? '#10b981' : 'white', color: pageData?.ayahs[0]?.surah === surah.number ? 'white' : '#047857', cursor: 'pointer' }}
+                >
+                  {surah.number}. {surah.name}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
 
       {/* مؤشر الصوت */}
@@ -1506,6 +1473,33 @@ const RealMushafReader: React.FC<RealMushafReaderProps> = ({ loading = false }) 
                     borderRadius: '12px',
                     border: '1px solid rgba(16, 185, 129, 0.2)'
                   }}>
+                    {/* زر تشغيل الآية يدويًا */}
+                    <button
+                      onClick={() => selectedAyah && playAyahAudio(selectedAyah.surah, selectedAyah.ayah)}
+                      disabled={isAudioLoading}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        padding: '8px 16px',
+                        backgroundColor: '#10b981',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '8px',
+                        cursor: isAudioLoading ? 'not-allowed' : 'pointer',
+                        fontSize: '14px',
+                        fontWeight: '500',
+                        transition: 'all 0.2s',
+                        opacity: isAudioLoading ? 0.7 : 1,
+                      }}
+                    >
+                      {isAudioLoading ? (
+                        <Loader2 className="w-5 h-5 animate-spin" />
+                      ) : (
+                        <Volume2 className="w-5 h-5" />
+                      )}
+                      {isAudioLoading ? 'جاري تحميل الآية...' : 'تشغيل الآية'}
+                    </button>
                     <button
                       onClick={() => selectedAyah && toggleSurahPlayPause(selectedAyah.surah)}
                       disabled={isLoading}

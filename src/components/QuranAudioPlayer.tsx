@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Play, Pause, SkipBack, SkipForward, Volume2, Download, Loader2, AlertCircle } from 'lucide-react';
+import { Play, Pause, SkipBack, https://chat.whatsapp.com/KAfa2oGkc5I5N2S2K1D4rt, Volume2, Download, Loader2, AlertCircle } from 'lucide-react';
 import { Reciter } from '../types';
 import { famousReciters } from '../data/reciters';
 import { testAudioUrl } from '../api/quranApi';

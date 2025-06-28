@@ -54,19 +54,6 @@ export const famousReciters = [
     description: 'صاحب النبرة الحزينة - مصر',
     country: 'مصر'
   },
-  {
-    id: 'muhammad_rifat',
-    name: 'Muhammad Rifat',
-    arabic_name: 'الشيخ محمد رفعت',
-    audio_base_url: 'https://server14.mp3quran.net/rifai',
-    fallback_urls: [
-      'https://server14.mp3quran.net/rifai',
-      'https://server12.mp3quran.net/rifai',
-      'https://server6.mp3quran.net/rifai'
-    ],
-    description: 'أول من سجل القرآن الكريم - مصر',
-    country: 'مصر'
-  },
 
   // القراء السعوديون المعاصرون
   {
@@ -80,19 +67,6 @@ export const famousReciters = [
       'https://server10.mp3quran.net/saad_ghamdi'
     ],
     description: 'صوت هادئ وجميل - السعودية',
-    country: 'السعودية'
-  },
-  {
-    id: 'saud_alshuraim',
-    name: 'Saud Al-Shuraim',
-    arabic_name: 'الشيخ سعود بن إبراهيم الشريم',
-    audio_base_url: 'https://server6.mp3quran.net/shur',
-    fallback_urls: [
-      'https://server6.mp3quran.net/shur',
-      'https://server7.mp3quran.net/shuraim',
-      'https://server11.mp3quran.net/shuraim'
-    ],
-    description: 'إمام الحرم المكي - السعودية',
     country: 'السعودية'
   },
   {
@@ -148,48 +122,6 @@ export const famousReciters = [
     country: 'السعودية'
   },
   {
-    id: 'khaled_aljalil',
-    name: 'Khaled Al-Jalil',
-    arabic_name: 'الشيخ خالد عبد الكافي الجليل',
-    audio_base_url: 'https://surahquran.com/mp3/aljalil',
-    fallback_urls: [
-      'https://surahquran.com/mp3/aljalil',
-      'https://server11.mp3quran.net/jalil',
-      'https://server12.mp3quran.net/khalid_jalil',
-      'https://www.tvquran.com/audio/khalid_jalil',
-      'https://server8.mp3quran.net/khalid_jalil'
-    ],
-    description: 'صوت رخيم وجميل - السعودية',
-    country: 'السعودية'
-  },
-  {
-    id: 'ahmad_alajmi',
-    name: 'Ahmad Al-Ajmi',
-    arabic_name: 'الشيخ أحمد بن علي العجمي',
-    audio_base_url: 'https://server10.mp3quran.net/ajm',
-    fallback_urls: [
-      'https://server10.mp3quran.net/ajm',
-      'https://server11.mp3quran.net/ajmi',
-      'https://server8.mp3quran.net/ahmad_ajmi'
-    ],
-    description: 'قراءة مؤثرة وخاشعة - السعودية',
-    country: 'السعودية'
-  },
-  {
-    id: 'abdullah_basfar',
-    name: 'Abdullah Basfar',
-    arabic_name: 'الشيخ عبد الله بن علي بصفر',
-    audio_base_url: 'https://server7.mp3quran.net/basfer',
-    fallback_urls: [
-      'https://server7.mp3quran.net/basfer',
-      'https://server8.mp3quran.net/basfar',
-      'https://server12.mp3quran.net/basfer',
-      'https://www.alhamdlilah.com/mp3/78'
-    ],
-    description: 'صوت مميز ونقي - السعودية',
-    country: 'السعودية'
-  },
-  {
     id: 'ali_jaber',
     name: 'Ali Abdullah Jaber',
     arabic_name: 'الشيخ علي بن عبد الله جابر',
@@ -202,20 +134,6 @@ export const famousReciters = [
     ],
     description: 'إمام المسجد النبوي - السعودية',
     country: 'السعودية'
-  },
-  {
-    id: 'fahd_alkandari',
-    name: 'Fahd Al-Kandari',
-    arabic_name: 'الشيخ فهد بن سالم الكندري',
-    audio_base_url: 'https://server8.mp3quran.net/kndri',
-    fallback_urls: [
-      'https://server8.mp3quran.net/kndri',
-      'https://server9.mp3quran.net/kandari',
-      'https://server12.mp3quran.net/fahd_kandari',
-      'https://ourquraan.com/fahd-kandari/mp3'
-    ],
-    description: 'قراءة مرتلة وواضحة - الكويت',
-    country: 'الكويت'
   },
   {
     id: 'muhammad_ayyub',
@@ -271,8 +189,14 @@ export function getFallbackAudioUrls(reciterId: string, surahNumber: number): st
 // دالة للتحقق من صحة رابط الصوت
 export async function validateAudioUrl(url: string): Promise<boolean> {
   try {
-    const response = await fetch(url, { method: 'HEAD' });
-    const contentType = response.headers.get('content-type');
+    // Try HEAD first
+    let response = await fetch(url, { method: 'HEAD' });
+    let contentType = response.headers.get('content-type');
+    // Fallback to GET if HEAD fails or is not audio
+    if (!response.ok || !contentType?.includes('audio')) {
+      response = await fetch(url, { method: 'GET' });
+      contentType = response.headers.get('content-type');
+    }
     return response.ok && (contentType?.includes('audio') || false);
   } catch {
     return false;

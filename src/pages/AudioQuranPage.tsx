@@ -208,7 +208,7 @@ const AudioQuranPage: React.FC = () => {
           normalizedName.includes(query) ||
           normalizedEnglish.includes(query) ||
           surah.number.toString() === query
-        );
+      );
       });
       setFilteredSurahs(filtered);
     }
@@ -671,7 +671,7 @@ const AudioQuranPage: React.FC = () => {
             <button
               onClick={playPrevious}
               disabled={!playingSurah}
-              className="px-4 py-2 bg-white border border-emerald-300 rounded hover:bg-emerald-100 disabled:opacity-50"
+              className="px-4 py-2 bg-white dark:bg-gray-800 border border-emerald-300 dark:border-emerald-500 rounded hover:bg-emerald-100 dark:hover:bg-emerald-800 disabled:opacity-50"
             >
               ← السابقة
             </button>
@@ -690,14 +690,14 @@ const AudioQuranPage: React.FC = () => {
                     }
                   }
                 }}
-                className="w-20 p-2 border border-emerald-300 rounded text-center"
+                className="w-20 p-2 bg-white dark:bg-gray-800 border border-emerald-300 dark:border-emerald-500 text-gray-900 dark:text-gray-100 rounded text-center"
               />
-              <span>/ 114</span>
+              <span className="text-gray-700 dark:text-gray-300">/ 114</span>
             </div>
             <button
               onClick={playNext}
               disabled={!playingSurah}
-              className="px-4 py-2 bg-white border border-emerald-300 rounded hover:bg-emerald-100 disabled:opacity-50"
+              className="px-4 py-2 bg-white dark:bg-gray-800 border border-emerald-300 dark:border-emerald-500 rounded hover:bg-emerald-100 dark:hover:bg-emerald-800 disabled:opacity-50"
             >
               التالية →
             </button>

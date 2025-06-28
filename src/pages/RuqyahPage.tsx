@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Shield, Play, Pause, Volume2, Copy, Heart, BookOpen, Star } from 'lucide-react';
+import { Shield, Copy, Heart, Star } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 interface RuqyahItem {
@@ -177,29 +177,7 @@ const ruqyahCategories: RuqyahCategory[] = [
 
 const RuqyahPage: React.FC = () => {
   const [selectedCategory, setSelectedCategory] = useState(ruqyahCategories[0]);
-  const [playingId, setPlayingId] = useState<string | null>(null);
   const [favorites, setFavorites] = useState<string[]>([]);
-
-  const playAudio = (item: RuqyahItem) => {
-    if ('speechSynthesis' in window) {
-      if (playingId === item.id) {
-        speechSynthesis.cancel();
-        setPlayingId(null);
-        return;
-      }
-      
-      speechSynthesis.cancel();
-      const utterance = new SpeechSynthesisUtterance(item.arabic);
-      utterance.lang = 'ar-SA';
-      utterance.rate = 0.6;
-      utterance.onend = () => setPlayingId(null);
-      speechSynthesis.speak(utterance);
-      setPlayingId(item.id);
-      toast.success('جاري تشغيل الآية صوتياً');
-    } else {
-      toast.error('المتصفح لا يدعم التشغيل الصوتي');
-    }
-  };
 
   const copyText = (text: string) => {
     navigator.clipboard.writeText(text);
@@ -340,14 +318,6 @@ const RuqyahPage: React.FC = () => {
                         title="إضافة للمفضلة"
                       >
                         <Heart className={`w-5 h-5 ${favorites.includes(item.id) ? 'fill-current' : ''}`} />
-                      </button>
-                      
-                      <button
-                        onClick={() => playAudio(item)}
-                        className="p-2 rounded-lg bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-200 dark:hover:bg-emerald-800/50 transition-colors"
-                        title="تشغيل صوتي"
-                      >
-                        {playingId === item.id ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5" />}
                       </button>
                       
                       <button

@@ -71,6 +71,7 @@ const HadithPage: React.FC = () => {
         return;
       }
 
+      console.log('Fetched hadiths:', data?.length, 'total:', count);
       setHadiths(data || []);
       setTotalCount(count || 0);
       setFilteredHadiths(data || []);
@@ -148,6 +149,17 @@ const HadithPage: React.FC = () => {
     fetchHadiths(currentPage, selectedCategory, searchQuery);
   }, [selectedCategory, searchQuery, currentPage]);
 
+  // Scroll to top when hadith is expanded
+  useEffect(() => {
+    console.log('expandedHadith changed:', expandedHadith);
+    if (expandedHadith) {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }, [expandedHadith]);
+
+  // Get the expanded hadith object
+  const selectedHadith = expandedHadith ? filteredHadiths.find(h => h.id === expandedHadith) : null;
+
   const toggleFavorite = (hadithId: string) => {
     const newFavorites = favoriteHadiths.includes(hadithId)
       ? favoriteHadiths.filter(id => id !== hadithId)
@@ -183,7 +195,7 @@ const HadithPage: React.FC = () => {
   const totalPages = Math.ceil(totalCount / hadithsPerPage);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-teal-100 py-8">
+    <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-teal-100 dark:bg-gradient-to-br dark:from-gray-900 dark:to-gray-800 py-8">
       <div className="container mx-auto px-4">
         {/* Header */}
         <div className="text-center mb-12">
@@ -201,11 +213,88 @@ const HadithPage: React.FC = () => {
           </div>
         </div>
 
+        {/* Expanded Hadith View */}
+        {selectedHadith && (
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-8 mb-8 border-r-4 border-emerald-500 dark:border-emerald-700">
+            <div className="flex justify-between items-start mb-6">
+              <h2 className="text-2xl font-bold text-emerald-800 font-amiri">الحديث الشريف</h2>
+              <button
+                onClick={() => setExpandedHadith(null)}
+                className="px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+              >
+                ← العودة للقائمة
+              </button>
+            </div>
+            
+            <div className="mb-6">
+              <div className="flex gap-2 mb-4">
+                <span className="bg-emerald-100 text-emerald-800 px-3 py-1 rounded-full text-sm font-medium">
+                  {selectedHadith.category}
+                </span>
+                <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">
+                  {selectedHadith.grade}
+                </span>
+              </div>
+              
+              <div className="bg-emerald-50 p-6 rounded-lg mb-6">
+                <p className="text-xl leading-relaxed text-gray-800 dark:text-gray-200 font-noto-arabic text-center">
+                  {selectedHadith.hadith_text}
+                </p>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-gray-700">
+                <div className="text-center p-4 bg-gray-50 rounded-lg">
+                  <h4 className="font-bold text-emerald-800 mb-2">الراوي</h4>
+                  <p>{selectedHadith.narrator}</p>
+                </div>
+                <div className="text-center p-4 bg-gray-50 rounded-lg">
+                  <h4 className="font-bold text-emerald-800 mb-2">المصدر</h4>
+                  <p>{selectedHadith.book_name}</p>
+                </div>
+                <div className="text-center p-4 bg-gray-50 rounded-lg">
+                  <h4 className="font-bold text-emerald-800 mb-2">رقم الحديث</h4>
+                  <p>{selectedHadith.hadith_number}</p>
+                </div>
+              </div>
+            </div>
+            
+            <div className="flex justify-center gap-4 pt-4 border-t">
+              <button
+                onClick={() => toggleFavorite(selectedHadith.id)}
+                className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
+                  favoriteHadiths.includes(selectedHadith.id)
+                    ? 'bg-yellow-100 text-yellow-700'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600'
+                }`}
+              >
+                <Star className="w-5 h-5" />
+                {favoriteHadiths.includes(selectedHadith.id) ? 'إزالة من المفضلة' : 'إضافة للمفضلة'}
+              </button>
+              
+              <button
+                onClick={() => copyHadith(selectedHadith)}
+                className="flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+              >
+                <Copy className="w-5 h-5" />
+                نسخ
+              </button>
+              
+              <button
+                onClick={() => shareHadith(selectedHadith)}
+                className="flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+              >
+                <Share2 className="w-5 h-5" />
+                مشاركة
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* Search and Filters */}
-        <div className="bg-white rounded-xl shadow-md p-6 mb-8">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 mb-8">
           <div className="flex flex-col lg:flex-row gap-4 items-center">
             <div className="relative flex-1">
-              <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+              <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500 w-5 h-5" />
               <input
                 type="text"
                 placeholder="ابحث في الأحاديث..."
@@ -214,7 +303,7 @@ const HadithPage: React.FC = () => {
                   setSearchQuery(e.target.value);
                   setCurrentPage(1);
                 }}
-                className="w-full pr-10 pl-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 font-noto-arabic"
+                className="w-full pr-10 pl-4 py-3 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-600 text-gray-800 dark:text-gray-200 placeholder-gray-400 dark:placeholder-gray-500 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 font-noto-arabic"
               />
             </div>
             
@@ -277,11 +366,15 @@ const HadithPage: React.FC = () => {
         {/* Hadiths List */}
         {!loading && (
           <>
-            <div className="grid gap-6">
+            <div className={`grid gap-6 ${selectedHadith ? 'opacity-50' : ''}`}>
               {filteredHadiths.map((hadith) => (
                 <div
                   key={hadith.id}
-                  className="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition-shadow"
+                  className="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 hover:shadow-lg transition-shadow cursor-pointer"
+                  onClick={() => {
+                    console.log('Hadith clicked:', hadith.id, hadith.hadith_text.substring(0, 50));
+                    setExpandedHadith(hadith.id);
+                  }}
                 >
                   <div className="flex justify-between items-start mb-4">
                     <div className="flex items-center gap-2">
@@ -295,7 +388,10 @@ const HadithPage: React.FC = () => {
                     
                     <div className="flex gap-2">
                       <button
-                        onClick={() => toggleFavorite(hadith.id)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          toggleFavorite(hadith.id);
+                        }}
                         className={`p-2 rounded-lg transition-colors ${
                           favoriteHadiths.includes(hadith.id)
                             ? 'bg-yellow-100 text-yellow-600'
@@ -306,15 +402,21 @@ const HadithPage: React.FC = () => {
                       </button>
                       
                       <button
-                        onClick={() => copyHadith(hadith)}
-                        className="p-2 bg-gray-100 text-gray-600 rounded-lg hover:bg-gray-200 transition-colors"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          copyHadith(hadith);
+                        }}
+                        className="p-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
                       >
                         <Copy className="w-5 h-5" />
                       </button>
                       
                       <button
-                        onClick={() => shareHadith(hadith)}
-                        className="p-2 bg-gray-100 text-gray-600 rounded-lg hover:bg-gray-200 transition-colors"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          shareHadith(hadith);
+                        }}
+                        className="p-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
                       >
                         <Share2 className="w-5 h-5" />
                       </button>
@@ -322,7 +424,7 @@ const HadithPage: React.FC = () => {
                   </div>
 
                   <div className="mb-4">
-                    <p className="text-lg leading-relaxed text-gray-800 font-noto-arabic">
+                    <p className="text-lg leading-relaxed text-gray-800 dark:text-gray-200 font-noto-arabic">
                       {hadith.hadith_text}
                     </p>
                   </div>
@@ -351,7 +453,7 @@ const HadithPage: React.FC = () => {
                   <button
                     onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
                     disabled={currentPage === 1}
-                    className="px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="px-4 py-2 bg-white dark:bg-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     السابق
                   </button>
@@ -363,7 +465,7 @@ const HadithPage: React.FC = () => {
                   <button
                     onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
                     disabled={currentPage === totalPages}
-                    className="px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
+                    className="px-4 py-2 bg-white dark:bg-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     التالي
                   </button>
