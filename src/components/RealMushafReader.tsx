@@ -238,18 +238,12 @@ const RealMushafReader: React.FC<RealMushafReaderProps> = ({ loading = false }) 
     
     if (!hasSeenUpdate) {
       setTimeout(() => {
-        toast.success('تم تحسين عرض المصحف للوضع المظلم وإزالة الأيقونات الزائدة', {
-          duration: 5000,
-          position: 'top-center'
-        });
+        // toast success removed per user request
         localStorage.setItem('mushaf_update_seen', 'true');
       }, 2000);
     } else if (!hasSeenRecitersFix) {
       setTimeout(() => {
-        toast.success('🎉 تم إصلاح جميع مشاكل أصوات القراء - كل الشيوخ يعملون بأصواتهم الصحيحة!', {
-          duration: 8000,
-          position: 'top-center'
-        });
+        // toast success removed per user request
         localStorage.setItem('reciters_audio_fix_seen', 'true');
       }, 2500);
     }
