@@ -90,7 +90,7 @@ const ProphetStoryDetailPage: React.FC = () => {
 
       {/* رأس القصة */}
       <div className="bg-gradient-to-r from-emerald-600 to-blue-600 rounded-xl p-8 mb-8 text-white">
-        <div className="flex justify-between items-start">
+        <div className="flex flex-col md:flex-row justify-between items-start gap-4">
           <div className="flex-1">
             <h1 className="text-4xl font-bold font-amiri mb-2">
               قصة النبي {story.arabicName}
@@ -141,7 +141,7 @@ const ProphetStoryDetailPage: React.FC = () => {
       </div>
 
       {/* محتوى القصة */}
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-8">
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-6 md:p-8">
         <div className="prose prose-lg max-w-none dark:prose-invert">
           <div className="text-gray-800 dark:text-gray-200 leading-relaxed text-lg font-noto-arabic whitespace-pre-line">
             {story.fullStory}
