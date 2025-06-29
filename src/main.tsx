@@ -4,12 +4,15 @@ import { BrowserRouter } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import App from './App';
 import './index.css';
+import { registerSW } from 'virtual:pwa-register';
 
 // Ensure the root element exists
 const rootElement = document.getElementById('root');
 if (!rootElement) {
   throw new Error('Root element not found');
 }
+
+registerSW({ immediate: true });
 
 createRoot(rootElement).render(
   <StrictMode>
