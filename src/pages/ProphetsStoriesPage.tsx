@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Book, Star, Heart, Search, ChevronDown, ChevronUp } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -20,7 +21,7 @@ interface ProphetStory {
   isFavorite?: boolean;
 }
 
-const prophetStories: ProphetStory[] = [
+export const prophetStories: ProphetStory[] = [
   {
     id: 'adam',
     name: 'Adam',
@@ -5976,6 +5977,7 @@ const prophetStories: ProphetStory[] = [
 ];
 
 const ProphetsStoriesPage: React.FC = () => {
+  const navigate = useNavigate();
   const [selectedProphet, setSelectedProphet] = useState<ProphetStory | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [favorites, setFavorites] = useState<string[]>([]);
@@ -6062,9 +6064,7 @@ const ProphetsStoriesPage: React.FC = () => {
               key={prophet.id}
               className="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden border border-gray-200 dark:border-gray-700 transform hover:scale-105 transition-all duration-300 cursor-pointer"
               onClick={() => {
-                console.log('تم النقر على قصة:', prophet.arabicName, 'ID:', prophet.id);
-                setLastClickedId(prophet.id);
-                setSelectedProphet(prophet);
+                navigate(`/prophets-stories/${prophet.id}`);
               }}
             >
               <div className="h-32 bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center">

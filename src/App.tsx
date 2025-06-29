@@ -10,6 +10,7 @@ import HomePage from './pages/HomePage';
 import QuranPage from './pages/QuranPage';
 import AudioQuranPage from './pages/AudioQuranPage';
 import ProphetsStoriesPage from './pages/ProphetsStoriesPage';
+import ProphetStoryDetailPage from './pages/ProphetStoryDetailPage';
 import HadithPage from './pages/HadithPage';
 import RuqyahPage from './pages/RuqyahPage';
 import ChildrenEducationPage from './pages/ChildrenEducationPage';
@@ -62,6 +63,7 @@ function App() {
           <Route path="quran" element={<QuranPage />} />
           <Route path="audio-quran" element={<AudioQuranPage />} />
           <Route path="prophets-stories" element={<ProphetsStoriesPage />} />
+          <Route path="prophets-stories/:id" element={<ProphetStoryDetailPage />} />
           <Route path="hadith" element={<HadithPage />} />
           <Route path="ruqyah" element={<RuqyahPage />} />
           <Route path="children-education" element={<ChildrenEducationPage />} />

@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { GraduationCap, Star, Heart, BookOpen, Award, Gift } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { useNavigate } from 'react-router-dom';
 
 interface EducationItem {
   id: string;
@@ -390,85 +391,21 @@ const educationCategories: EducationCategory[] = [
       }
     ]
   },
-  {
-    id: 'fun_activities',
-    name: 'أنشطة ممتعة',
-    description: 'ألعاب وأنشطة تعليمية إسلامية',
-    icon: <Award className="w-6 h-6" />,
-    color: 'purple',
-    items: [
-      {
-        id: 'islamic_games',
-        title: 'ألعاب إسلامية تعليمية',
-        content: 'تعلم الإسلام باللعب! ألعاب الذاكرة للآيات، ألغاز عن الأنبياء، مسابقات الأذكار، وأنشطة التلوين الإسلامية.',
-        ageGroup: '5-12 سنوات',
-        icon: '🎮',
-        lesson: 'التعلم باللعب أجمل وأسهل',
-        activities: [
-          'لعبة مطابقة أسماء الأنبياء',
-          'تلوين المسجد الحرام والمسجد النبوي',
-          'مسابقة حفظ الأذكار',
-          'أحجية كلمات إسلامية'
-        ]
-      },
-      {
-        id: 'crafts',
-        title: 'الأعمال اليدوية الإسلامية',
-        content: 'اصنع بيديك أشياء جميلة! مصحف صغير من الورق، مسجد من الكرتون، تقويم إسلامي، وزينة رمضانية.',
-        ageGroup: '6-12 سنوات',
-        icon: '✂️',
-        lesson: 'العمل باليد عبادة وإبداع',
-        activities: [
-          'اصنع مسجداً من الكرتون',
-          'زين غرفتك بالآيات القرآنية الجميلة',
-          'اعمل تقويماً هجرياً ملوناً',
-          'اصنع كتيب أذكاري صغير مزين',
-          'اعمل لوحة بأسماء الله الحسنى',
-          'زين المصحف بغلاف جميل'
-        ]
-      },
-      {
-        id: 'learning_through_play',
-        title: 'التعلم باللعب',
-        content: 'نتعلم الإسلام بطرق ممتعة: لعبة الأسئلة الدينية، مسرح العرائس لقصص الأنبياء، الرسم الإسلامي، والأناشيد الدينية الجميلة.',
-        ageGroup: '4-12 سنة',
-        icon: '🎪',
-        lesson: 'التعلم الممتع أبقى في الذاكرة',
-        activities: [
-          'العب لعبة "من أنا؟" مع الأنبياء',
-          'ارسم المسجد الحرام والكعبة',
-          'انشد أناشيد دينية جميلة',
-          'اعمل مسرحية عن قصة نبي',
-          'العب لعبة "أسرع إجابة" الدينية',
-          'اصنع أحجية بآيات قرآنية'
-        ]
-      },
-      {
-        id: 'nature_and_islam',
-        title: 'الطبيعة في الإسلام',
-        content: 'خلق الله الطبيعة جميلة لنستمتع بها ونحافظ عليها. الأشجار والزهور والطيور كلها تسبح الله. نحافظ على البيئة ولا نلوثها.',
-        ageGroup: '5-12 سنة',
-        icon: '🌿',
-        lesson: 'المؤمن يحافظ على خلق الله',
-        activities: [
-          'ازرع شجرة أو زهرة',
-          'لا ترم القمامة في الطبيعة',
-          'اطعم الطيور والحيوانات',
-          'تأمل في خلق الله واحمده',
-          'وفر الماء والكهرباء',
-          'نظف الحديقة أو الشارع'
-        ]
-      }
-    ]
-  }
 ];
 
 const ChildrenEducationPage: React.FC = () => {
   const [selectedCategory, setSelectedCategory] = useState(educationCategories[0]);
   const [completedItems, setCompletedItems] = useState<string[]>([]);
   const [selectedItem, setSelectedItem] = useState<EducationItem | null>(null);
+  const detailRef = useRef<HTMLDivElement | null>(null);
 
-  // تم إزالة التشغيل الصوتي
+  useEffect(() => {
+    if (selectedItem) {
+      setTimeout(() => {
+        detailRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 50);
+    }
+  }, [selectedItem]);
 
   const markAsCompleted = (itemId: string) => {
     const newCompleted = completedItems.includes(itemId)
@@ -596,7 +533,7 @@ const ChildrenEducationPage: React.FC = () => {
         </>
       ) : (
         /* عرض الدرس التفصيلي */
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700">
+        <div ref={detailRef} className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700">
           <div className={`h-48 bg-gradient-to-br ${getColorClasses(selectedCategory.color)} flex items-center justify-center relative`}>
             <span className="text-8xl">{selectedItem.icon}</span>
             <button
