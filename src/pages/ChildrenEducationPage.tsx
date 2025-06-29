@@ -10,6 +10,8 @@ interface EducationItem {
   icon: string;
   lesson: string;
   activities: string[];
+  /** صور استرشادية اختيارية لعرضها داخل تفاصيل الدرس */
+  images?: string[];
 }
 
 interface EducationCategory {
@@ -137,6 +139,14 @@ const educationCategories: EducationCategory[] = [
         ageGroup: '5-10 سنوات',
         icon: '💧',
         lesson: 'الطهارة نصف الإيمان',
+        images: [
+          '/images/wudu/step1.jpg',
+          '/images/wudu/step2.jpg',
+          '/images/wudu/step3.jpg',
+          '/images/wudu/step4.jpg',
+          '/images/wudu/step5.jpg',
+          '/images/wudu/step6.jpg'
+        ],
         activities: [
           'تعلم خطوات الوضوء بالترتيب',
           'قل "بسم الله" قبل الوضوء',
@@ -621,6 +631,24 @@ const ChildrenEducationPage: React.FC = () => {
                 </p>
               </div>
             </div>
+
+            {/* صور استرشادية */}
+            {selectedItem.images && selectedItem.images.length > 0 && (
+              <div className="mb-8">
+                <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-4 font-amiri">🖼️ صور توضيحية</h2>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                  {selectedItem.images.map((img, idx) => (
+                    <img
+                      key={idx}
+                      src={img}
+                      alt={`${selectedItem.title} - خطوة ${idx + 1}`}
+                      className="w-full h-auto rounded-lg shadow"
+                      loading="lazy"
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
 
             {/* الدرس المستفاد */}
             <div className="mb-8">

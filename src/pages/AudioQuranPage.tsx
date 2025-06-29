@@ -92,18 +92,6 @@ const AudioQuranPage: React.FC = () => {
 
     loadData();
 
-    // رسالة ترحيبية بإصلاح مشاكل القراء
-    const hasSeenRecitersFix = localStorage.getItem('reciters_audio_fix_seen');
-    if (!hasSeenRecitersFix) {
-      setTimeout(() => {
-        toast.success('🎉 تم إصلاح جميع مشاكل أصوات القراء - الآن جميع الشيوخ يعملون بأصواتهم الصحيحة!', {
-          duration: 8000,
-          position: 'top-center'
-        });
-        localStorage.setItem('reciters_audio_fix_seen', 'true');
-      }, 3000);
-    }
-
     // Create audio element with better configuration
     const audio = new Audio();
     audio.volume = 0.7;
