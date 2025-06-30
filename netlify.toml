@@ -23,6 +23,7 @@
   NPM_VERSION = "9"
   VITE_SUPABASE_URL = "https://feczsdecgyahglargwap.supabase.co"
   VITE_SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZlY3pzZGVjZ3lhaGdsYXJnd2FwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDkxNDE4NjEsImV4cCI6MjA2NDcxNzg2MX0.NMliJLiebIgUFa-CrHA0pI6SVYX0oMYIRasxvqSgudo"
+  VITE_GA_MEASUREMENT_ID = "G-LKS2T3XCFR"
 
 [[headers]]
   for = "/*"
