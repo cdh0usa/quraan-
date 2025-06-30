@@ -1,6 +1,7 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
+import Sitemap from 'vite-plugin-sitemap';
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -49,6 +50,11 @@ export default defineConfig({
           }
         ]
       }
+    }),
+    Sitemap({
+      hostname: 'https://www.islampath.site',
+      exclude: ['/admin', '/admin/*'],
+      generateRobotsTxt: false
     })
   ],
   base: '/',

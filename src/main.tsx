@@ -5,6 +5,8 @@ import { Toaster } from 'react-hot-toast';
 import App from './App';
 import './index.css';
 import { registerSW } from 'virtual:pwa-register';
+import { HelmetProvider } from 'react-helmet-async';
+import { initAnalytics } from './utils/analytics';
 
 // Ensure the root element exists
 const rootElement = document.getElementById('root');
@@ -14,8 +16,13 @@ if (!rootElement) {
 
 registerSW({ immediate: true });
 
+// Initialize Google Analytics (GA4)
+initAnalytics();
+
 createRoot(rootElement).render(
   <StrictMode>
-    <App />
+    <HelmetProvider>
+      <App />
+    </HelmetProvider>
   </StrictMode>
 );

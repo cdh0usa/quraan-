@@ -1,5 +1,5 @@
-import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import React, { useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 
 // Layouts
@@ -27,10 +27,22 @@ import AdminRecitersPage from './pages/admin/AdminRecitersPage';
 // Components
 import ProtectedRoute from './components/ProtectedRoute';
 import AdminRedirect from './components/AdminRedirect';
+import { trackPageView } from './utils/analytics';
+
+function RouteChangeTracker() {
+  const location = useLocation();
+
+  useEffect(() => {
+    trackPageView(location);
+  }, [location]);
+
+  return null;
+}
 
 function App() {
   return (
     <Router>
+      <RouteChangeTracker />
       <Toaster 
         position="top-center"
         toastOptions={{

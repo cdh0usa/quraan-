@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /admin/*
+
+# Update the domain below after deployment
+Sitemap: https://www.islampath.site/sitemap.xml 
